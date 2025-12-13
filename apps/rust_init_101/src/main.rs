@@ -37,5 +37,20 @@ fn main() {
     // string to byte
     let byte_arr1 = st6.as_bytes();
     let st7: &str = &st6[0..6]; // will panic if the range is out of bound
+    println!("st7 string length = {} and the string is {st7}", st7.len());
+    
+
+    // clearing is only possible with mutable string
+    st6.clear();
+    println!("After clearing st6's length is st6.len() = {}", st6.len()); // 0
+
+    // string concatenation
+    let st8: String = String::from("Hello");
+    let st9: String = String::from(" world");
+    let st10: String = st8 + &st9;
+    // converting byte to char again to demo
+    for char in st10.bytes() {
+        println!("char {} and byte {}", char::from(char) , char);
+    }
     
 }
