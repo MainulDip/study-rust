@@ -328,3 +328,53 @@ fn main() {
 ```
 
 ### Type casting:
+
+```rust
+fn main() {
+    // type casting
+    let int1_u8: u8 = 5;
+    let int2_u8: u8 = 4;
+    let int3_u32: u32 = (int1_u8 as u32) + (int2_u8 as u32);
+}
+```
+
+### Enum:
+
+```rust
+fn main() {
+    // Emum
+    enum Day {
+        Monday,
+        Tuesday,
+        Wednesday,
+        Thursday,
+        Friday,
+        Saturday,
+        Sunday,
+    }
+
+    // defining functions for enum
+    impl Day {
+        fn is_weekend(&self) -> bool {
+            return match self {
+                Day::Saturday | Day::Sunday => true,
+                _ => false,
+            };
+        }
+    }
+
+    // usages
+    let today: Day = Day::Monday;
+    match today {
+        Day::Monday => println!("Everyone hates Monday"),
+        Day::Tuesday => println!(""),
+        Day::Wednesday => println!(""),
+        Day::Thursday => println!(""),
+        Day::Friday => println!(""),
+        Day::Saturday => println!(""),
+        Day::Sunday => println!(""),
+    }
+
+    println!("Is today a weekend = {}", today.is_weekend());
+}
+```
