@@ -378,3 +378,17 @@ fn main() {
     println!("Is today a weekend = {}", today.is_weekend());
 }
 ```
+
+
+### Vectors:
+
+
+### `Option<T>` enum | containing `Some` and `None`:
+None and Some are the variants of the enum, that is, a value with type Option<T> can either be a None, or it can be a Some containing a value of type T. 
+
+```rust
+pub enum Option<T> {
+    None,
+    Some(T),
+}
+```
