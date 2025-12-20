@@ -1,4 +1,4 @@
-# Vim Note:
+# Vim Note
 On `esc` mode, `h,j,k,l` as left/h, bottom/j, top/k, right/l and `w` for right word jump and `b` for left word jump
 
 insert/i at the cursor, append/a after the cursor, append-new-line/o ect for  writing mode
