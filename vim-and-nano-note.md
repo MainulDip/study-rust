@@ -8,4 +8,4 @@ save/`:wq`, discard-changes/`:q!` are notables from `esc` mode
 - cut/paste: d to cut and p to paste. For clipboard source, use gui.
 Cheat: https://vim.rtorr.com/
 
-* Note: for termux, `ctrl + space` will not work or buggy. 
+* Note: for termux, `ctrl + space` will not work or buggy. Map `alt + backticks` instead
