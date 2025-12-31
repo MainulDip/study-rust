@@ -26,8 +26,13 @@ fn main() {
     // like variables, references are immutable, so we need to specify `&mut` to mutate
 
     /*
-     * read_line function returns a Result type. Result is an enumeration, often called an enum, which is a type that can be in one of multiple possible states.
+     * read_line function returns a Result type. Result is an enumeration (Enum), often called an enum, which is a type that can be in one of multiple possible states. We call each possible state a variant.
      * Result’s variants are Ok and Err. The Ok variant indicates the operation was successful, and it contains the successfully generated value. The Err variant means the operation failed, and it contains information about how or why the operation failed.
-     * 
+     * Values of the Result type, like values of any type, have methods defined on them. An instance of Result has an expect method that you can call. 
+     * If this instance of Result is an Err value, expect will cause the program to crash and display the message that you passed as an argument to expect. 
+     * If the read_line method returns an Err, it would likely be the result of an error coming from the underlying operating system. 
+     * If this instance of Result is an Ok value, expect will take the return value that Ok is holding and return just that value to you so that you can use it. 
+     * Without expect, the program will compile, but issue warning showing the `error case is not handled`
+     * In simple terms, expect is used to handle the error case
     */
 }
