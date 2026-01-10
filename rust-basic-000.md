@@ -159,9 +159,7 @@ Constants are always immutable and cannot be evaluated during runtime or based o
 
 - Struct Fields: Use snake_case.
 
-- Types, Structs, Enums, Traits: Use UpperCamelCase (PascalCase), e.g., struct 
-
-- UserAccount;, enum Direction { North, South }.
+- Types, Structs, Enums, Traits: Use UpperCamelCase (PascalCase)
 
 - Enum Variants: Use UpperCamelCase, e.g., MyOption::SomeValue.
 
