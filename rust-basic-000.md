@@ -268,12 +268,56 @@ fn main() {
 }
 ```
 
-### Compound Types | `tuple` and `array` | array vs Vec<T> (Flexibility):
+### Compound Types | `tuple` and `array` | array vs Vec<T> (Stack Performance vs Heap Flexibility):
 Both tuples and arrays are fixed in size. Hence, stored in the stack. Once declared, they cannot grow or shrink in size. Vec<T> can grow or shrink, hence stored in the heap.
 
 * Both tuple and array can be declared using `let` and `let mut`, when declared with `mut`, we can change its individual element's value.
 
-- Tuple : written by a comma-separated list of values inside parentheses `(1, 2, 1.2)`. It can contain 
+- Tuple : written by a comma-separated list of values inside parentheses `(1, 2, 1.2)`. It can store different types.
+
+- Array : written by a comma-separated list of values inside square brackets. Unlike tuple, all elements must have the same type. Explicit type is done by: Elements data type, a semicolon and then the number of elements all within a square bracket as `[type; number_of_elements]`.
 
 * `unit` type is an empty tuple `()`
 
+```rust
+fn main() {
+    let tup: (i32, f64, u8) = (400, 6.4, 1);
+    let (x, y, z) = tup; // pattern matching for destructuring
+    println!("The value of y is: {y}");
+
+    // using dot syntax to access tuple
+    let four_hundred = tup.0;
+    let six_point_four = tup.1;
+
+    // Array
+    let a = [1, 2, 3, 4, 5, 6, 7];
+    let b: [u32; 4] = [1, 2, 3, 4];
+
+    // declaration of array's type: type, a semicolon and then the number of elements all within a square bracket as `[type; number_of_elements]`
+    let months: [&str; 12] = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+    println!("This is the month = {}", months[11]);
+}
+```
+
+* Index out of range | Panic: While in runtime, if out of range (If the index is greater than or equal to the length) array elements are accessed, rust program will panic and exit. 
+
+
+### Functions `fn` :
+Functions can be defined before or after the calling block. Rust doesn’t care where you define your functions, only that they’re defined somewhere in a scope that can be seen by the caller.
+
+* argument vs parameter: Technically, the concrete values are called arguments (callers's use this, when calling the function), parameter is the variable defined in the functions declaration. Bun in casual conversation, they are same
+
+```rust
+fn main() {
+    print_labeled_measurement(7, 'G');
+}
+
+print_labeled_measurement(value: i32, unit_label: char) {
+    println!("The measurement is : {value}{unit_label});
+}
+```
+
+* Statement vs Expression: Rust is an expression based language. Where 
+    - Statements are instructions that perform some action and do not return a value (no returns, perform tasks, binding or assignment)
+    - Expressions evaluate to a resultant value (evaluates to a value or returns). `6+6` or `6` are both expression as they evaluate to a value. Expression can be part of a statement
