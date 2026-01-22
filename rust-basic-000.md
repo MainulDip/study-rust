@@ -352,3 +352,7 @@ fn main() {
 * Rust nothing returning type is `Unit` as `()` empty tuple
 * Swift's nothing returning type is `Void` as `()` empty tuple
 * Java's nothing returning type is `Void` only, value of Void is null
+
+### Comments:
+`//` for idiomatic comments
+
