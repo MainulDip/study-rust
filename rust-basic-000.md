@@ -393,3 +393,56 @@ pub fn add_one(x: i32) -> i32 {
 /// Adds one to the number given.
 // --snip--
 ```
+
+### Control flow | if/else if/else:
+Blocks of code associated with the conditions in if (after the condition, inside of curly braces) expressions (also, else) are sometimes called `arms`. Same as match statement.
+
+- if/else if/else expression
+* if/else if/else:  if bool {} else {}
+* the `if/else if` condition must be a bool
+* Rust only executes the block for the first true condition
+* Because if is an expression, we can use it on the right side of a let statement to assign the outcome to a variable
+* Instead of too many `else if` block, use the `match` statement
+
+
+```rust
+fn main() {
+
+    // using if expression to calculate another variable, but all arm should be of same type
+    let condition = true;
+    let conditional_number = if condition { 5 } else { 6 };
+
+    let number = 6;
+
+    if number % 4 == 0 {
+        println!("number is divisible by 4");
+    } else if number % 3 == 0 {
+        println!("number is divisible by 3");
+    } else if number % 2 == 0 {
+        println!("number is divisible by 2");
+    } else {
+        println!("number is not divisible by 4, 3, or 2");
+    }
+}
+```
+
+### Control flow | looping:
+Rust has three kinds of it -> `loop`, `while`, and `for`
+
+* controlling loop: continue (skip a loop iteration), break (skip all remaining iteration) and labeled break/continue
+
+```rust
+fn main() {
+    let mut counter = 0;
+
+    let result = loop {
+        counter += 1;
+
+        if counter == 10 {
+            break counter * 2;
+        }
+    };
+
+    println!("The result is {result}");
+}
+```
