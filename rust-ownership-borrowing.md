@@ -46,4 +46,4 @@ The std library provide the `String` type (different from the core's string slic
 ### Rust core vs standard-library:
 The Rust core library is the minimal, platform-agnostic foundation of the language, while the `std` library is the full standard library that builds upon core and adds platform-dependent capabilities like I/O and networking.
 
-The core is not aware of features like heap allocation, concurrency, or file I/O, as these require OS integration.
+The core is not aware of features like heap allocation, concurrency, or file I/O, as these depends on OS.
