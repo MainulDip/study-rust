@@ -89,3 +89,61 @@ fn main() {
 - `pub` : Makes items (functions, structs, etc.) public, allowing them to be accessed from outside their current module.
 - `use` : Imports items into the current scope, so you don't have to use their full path every time.
 - `::` : The namespace separator, used to access items within a module (e.g., std::collections::HashMap). 
+
+### Ownership (heap) | coping is actually moving the ownership:
+A String of made of 3 parts (std String)
+- a pointer to the stack memory, that holds the content of the String (data)
+- a length (actual) of the String
+- a capacity, the total amount of memory in bytes that the allocator has allocated for the String  
+
+When a heap-stored data, ie, `String` type of the standard library, is copied into another variable, (now) the new variable own the data, not the old variable. Its the heap stored data (pointer, length, capacity), not the stack stored actual data. 
+
+* double free error: when two variables are pointing to the same data (copied to variable-2 from variable-1), when this 2 variables go out-of-scope, they will both try to free the same memory. Rust solve this by only making the later variable valid (owner)
+
+```rust
+// this will not work
+let s1 = String::from("hello");
+let s2 = s1;
+
+// this will not work, as after copied, only s2 is valid. s1 is not valid
+println!("{s1}, world!");
+```
+
+* shallow vs deep copy: copying the pointer, length, and capacity without copying the data is shallow copy. And coping everything is a deep copy. But rust's behavior is more like a `move`, where the shallow data is transferred/moved to a new variable and the old variable become obsolete immediately.
+
+* Rust will never automatically create “deep” copies of your data. Shallow copy will always invalidate the old variable. To do deep copy, use `clone` method.
+
+For mutable variables, when a new value is assigned to a mutable variable, Rust will run the drop function and the old value will be freed up immediately. (guess, the allocator will write new data to the stack and modify the mutable variable with new pointer, length and capacity)
+
+
+```rust
+let s1 = String::from("hello");
+let s2 = s1.clone(); // deep copy 
+
+println!("s1 = {s1}, s2 = {s2}"); // valid 
+```
+
+### Stack only Data: Copy trait:
+Types that have known size at compile time are stored entirely on the stack, as stack stored data is quick to make, coping data to a new variable perform an actual copy (not move like heap stored type). After coping, the old variable doesn't get invalid. Also there is no difference between shallow and deep copy in this case, all are same, also calling `clone` method will not do any special that the default copy.
+
+```rust
+    let x = 5;
+    let y = x;
+
+    println!("x = {x}, y = {y}");
+```
+
+* copy trait: Usually all stack-stored data types already comes with `copy` trait implemented. So they can be copied rather than move. Custom type can also implement `copy` trait, unless the type or parts of it implement `drop` trait (heap stored move).
+
+
+* copy trait implemented types
+
+- All the integer types, such as u32.
+- The Boolean type, bool, with values true and false.
+- All the floating-point types, such as f64.
+- The character type, char.
+- Tuples, if they only contain types that also implement Copy. For example, (i32, i32) implements Copy, but (i32, String) does not.
+
+### Ownership and function:
+Same ownership rules apply for function. If heap-stored type is passed as function's parameter, the ownership changes, and the previous variable will not be valid afterwards. Unless returned and captured by another variable, the results will get lost (as rust runtime will executed drop method for the previous variable)
+
