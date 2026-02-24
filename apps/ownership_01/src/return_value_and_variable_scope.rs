@@ -9,7 +9,8 @@ pub fn return_value_and_variable_scope() {
     // takes_and_gives_back, which also
     // moves its return value into s3
 
-    println!("s3 = {s3}");
+    println!("s3 = {s3}"); // prints "s3 = hello world!"
+    println!("{s1} {s3}"); // prints "yours hello world!"
 } // Here, s3 goes out of scope and is dropped. s2 was moved, so nothing
   // happens. s1 goes out of scope and is dropped.
 
@@ -24,10 +25,10 @@ fn gives_ownership() -> String { // gives_ownership will move its
     // function
 }
 
-// This function takes a String and returns a String.
-fn takes_and_gives_back(a_string: String) -> String {
-    // a_string comes into
-    // scope
+// This function takes a String, concatenate and returns the new String.
+fn takes_and_gives_back(mut a_string: String) -> String {
+    // a_string comes into scope
 
+    a_string.push_str(" world!"); // pushing new worlds
     a_string  // a_string is returned and moves out to the calling function
 }

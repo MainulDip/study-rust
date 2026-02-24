@@ -144,6 +144,112 @@ Types that have known size at compile time are stored entirely on the stack, as 
 - The character type, char.
 - Tuples, if they only contain types that also implement Copy. For example, (i32, i32) implements Copy, but (i32, String) does not.
 
-### Ownership and function:
+### Ownership and function (without borrowing `&`):
 Same ownership rules apply for function. If heap-stored type is passed as function's parameter, the ownership changes, and the previous variable will not be valid afterwards. Unless returned and captured by another variable, the results will get lost (as rust runtime will executed drop method for the previous variable)
 
+```rust
+const GLOBAL_CONSTANT: f64 = 3.1416;
+
+pub fn ownership_and_function() {
+    let s = String::from("hello");  // s comes into scope
+
+    takes_ownership(s); // s's value moves into the function...
+    // println!("s = {s}"); // compile error, s is no longer valid here
+
+    let x = 5; // x comes into scope
+
+    makes_copy(x); // Because i32 implements the Copy trait,
+    // x does NOT move into the function,
+    // so it's okay to use x afterward.
+    println!("As x is a stack-stored type it's stilled valid, x = {x}");
+
+
+    println!("GLOBAL_CONSTANT is {GLOBAL_CONSTANT}"); // will work
+
+} // Here, x goes out of scope, then s. However, because s's value was moved,
+// nothing special happens.
+
+fn takes_ownership(some_string: String) { // some_string comes into scope
+    println!("{some_string}");
+} // Here, some_string goes out of scope and `drop` is called. The backing
+  // memory is freed.
+
+fn makes_copy(some_integer: i32) { // some_integer comes into scope
+    println!("{some_integer}");
+} // Here, some_integer goes out of scope
+```
+
+### Capturing ownership moved variable with function's `return`:
+Function can return value or values as tuple
+
+```rust
+#[allow(unused)]
+
+pub fn return_value_and_variable_scope() {
+    let s1 = gives_ownership(); // gives_ownership moves its return value into s1
+
+    let s2 = String::from("hello"); // s2 comes into scope
+
+    let s3 = takes_and_gives_back(s2); // s2 is moved into
+    // takes_and_gives_back, which also
+    // moves its return value into s3
+
+    println!("s3 = {s3}"); // prints "s3 = hello world!"
+    println!("{s1} {s3}"); // prints "yours hello world!"
+} // Here, s3 goes out of scope and is dropped. s2 was moved, so nothing
+  // happens. s1 goes out of scope and is dropped.
+
+fn gives_ownership() -> String { // gives_ownership will move its
+    // return value into the function
+    // that calls it
+
+    let some_string = String::from("yours"); // some_string comes into scope
+
+    some_string // some_string is returned and
+    // moves out to the calling
+    // function
+}
+
+// This function takes a String, concatenate and returns the new String.
+fn takes_and_gives_back(mut a_string: String) -> String {
+    // a_string comes into scope
+
+    a_string.push_str(" world!"); // pushing new worlds
+    a_string  // a_string is returned and moves out to the calling function
+}
+```
+
+* tuple return
+
+```rust
+fn main() {
+    let s1 = String::from("hello");
+
+    let (s2, len) = calculate_length(s1);
+
+    println!("The length of '{s2}' is {len}.");
+}
+
+fn calculate_length(s: String) -> (String, usize) {
+    let length = s.len(); // len() returns the length of a String
+
+    (s, length)
+}
+```
+
+### Reference and Borrowing | Retain ownership of the original variable:
+Instead of passing a owner as a function parameter, we can pass a reference using `&`. This way we can retain the original owner and at the same time utilize the value without messing with ownership. In rust, the act of creating a reference is called `Borrowing`.
+
+```rust
+pub fn reference_and_borrowing() {
+    let s1 = String::from("Hello World!");
+    let s_len = calculate_length(&s1);
+    println!("s1 = \"{s1}\" and length is sLen = {s_len}");
+    // s1 is still valid as it had been borrowed using `&` and not used directly
+}
+
+
+fn calculate_length(str: &String) -> usize {
+    str.len()
+}
+```

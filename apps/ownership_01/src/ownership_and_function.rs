@@ -11,9 +11,10 @@ pub fn ownership_and_function() {
     makes_copy(x); // Because i32 implements the Copy trait,
     // x does NOT move into the function,
     // so it's okay to use x afterward.
+    println!("As x is a stack-stored type it's stilled valid, x = {x}");
 
 
-    println!("GLOBAL_CONSTANT is {GLOBAL_CONSTANT}");
+    println!("GLOBAL_CONSTANT is {GLOBAL_CONSTANT}"); // will work
 
 } // Here, x goes out of scope, then s. However, because s's value was moved,
 // nothing special happens.
