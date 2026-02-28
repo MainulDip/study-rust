@@ -8,7 +8,7 @@ fn first_word(s: &String) -> usize {
     let bytes = s.as_bytes();
 
     for (index, &item) in bytes.iter().enumerate() {
-        if item == b  {
+        if item == b' '  {
             return index;
         }
     }
