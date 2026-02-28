@@ -256,7 +256,7 @@ fn calculate_length(str: &String) -> usize {
 
 * an immutable borrowed prop/s cannot be mutated. But an immutable owned prop can be mutated using the `mut` keyword in the function's prop definition.
 
-* mutable reference signature: `&mut Type` for parameter and `&mut property` for argument/calling.  
+* `mutable reference` signature: `&mut T` for parameter and `&mut property` for argument/calling.  
 
 ```rust
 pub fn borrowing_and_mutation() {
@@ -273,3 +273,86 @@ fn change(str: &mut String) -> String {
     str.to_string()
 }
 ```
+
+* No Multiple Mutable Reference Restriction (prevent data race): A value can have only one mutable reference. More than one (in the same scope, or last used) will cause compile error `cannot borrow <variable> as mutable more than once at a time`
+
+```rust
+let mut s = String::from("hello");
+
+let r1 = &mut s;
+// let r2 = &mut s; // will throw compile error
+
+// but creating separate scope with just `{}` curly braces is fine for this case
+let mut x = String::from("World!");
+
+{
+    let r3 = &mut x;
+    println!("r1 = {r1}");
+
+} // r1 goes out-of-scope and dropped, so the mutable reference is not active now
+
+let r4 = &mut x;
+```
+
+* No combining of immutable and mutable Reference/Borrow: Unless scoped, it will also throw compile error
+
+
+```rust
+let mut s = String::from("hello");
+
+let r1 = &s; // no problem
+let r2 = &s; // no problem
+let r3 = &mut s; // BIG PROBLEM
+
+println!("{r1}, {r2}, and {r3}"); // compile error
+```
+
+* Note that a reference’s scope starts from where it is introduced and continues through the last time that reference is used. 
+
+```rust
+let mut s = String::from("hello");
+
+let r1 = &s; // no problem
+let r2 = &s; // no problem
+println!("{r1} and {r2}");
+// Variables r1 and r2 will not be used after this point.
+
+let r3 = &mut s; // no problem
+println!("{r3}");
+```
+
+### Dangling Reference:
+When a pointer reference a location in memory that may have been given to someone else, and the pointer went to out-of-scope, is called Dangling pointer. Rust compiler guarantees, a reference will never be a dangling reference.
+
+```rust
+// this code will not compile
+fn main() {
+    let reference_to_nothing = dangle();
+}
+
+// this code will not compile because of dangling reference (trying to access deallocated/dropped memory)
+fn dangle() -> &String {
+    let s = String::from("Hello");
+    &s // returning a reference to the s String
+} // but here, s goes out of scope and is dropped, so it's memory goes away as well. Danger!
+// so this function will not compile
+
+// solution: don't return a reference in this case
+// This works without any problems. Ownership is moved out, and nothing is deallocated
+fn no_dangle() -> String {
+    let s = String::from("hello");
+    s
+}
+```
+
+* Rules of reference
+
+    - At any given time, you can have either one mutable reference or any number of immutable references.
+    - References must always be valid.
+
+### Dereference type | `*T/V`:
+
+### Slice type:
+A slice is kind of a reference, so it doesn't have ownership. Slice lets us reference a contiguous sequence of elements is a collection.
+
+* In idiomatic Rust, functions do not take ownership of their arguments unless they need to, and the reasons for that will become clear as we keep going

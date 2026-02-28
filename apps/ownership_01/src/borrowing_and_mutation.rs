@@ -13,3 +13,11 @@ fn change(str: &mut String) -> String {
     str.push_str(" World!");
     str.to_string()
 }
+
+
+// Dangling reference
+// this function will not work
+// fn danger() -> &String {
+//     let some_string = String::from("Hello World!");
+//     &some_string
+// }
