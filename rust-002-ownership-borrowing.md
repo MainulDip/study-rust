@@ -351,6 +351,37 @@ fn no_dangle() -> String {
     - References must always be valid.
 
 ### Dereference type | `*T/V`:
+a borrowed type can be dereferenced using `*`, but without the `&` will simply work
+
+### Words collection without slice (first written programme):
+```rust
+main() {
+    let letter = String::from("Hello World Again");
+    let word_col = slicing_word_manual(&letter);
+    println!("words = {:?}", word_col);
+}
+
+fn slicing_word_manual(words: &String) -> Vec<String> {
+    // variable vector (container) with all the words
+    let mut word_vector: Vec<String> = vec![];
+    let mut a_word = String::from("");
+    let bytes = words.as_bytes();
+
+    // current pointer is the loop
+    for (index, &item) in bytes.iter().enumerate() {
+        if item == b' ' || index == bytes.len() - 1 {
+            if index == bytes.len() -1 {
+                a_word.push(*&item as char);
+            }
+            word_vector.push(a_word.clone());
+            a_word.clear();
+            continue;
+        }
+        a_word.push(*&item as char); // `a_word.push(item as char);` will also work, plain and simple 
+    }
+    return word_vector;
+}
+```
 
 ### Slice type:
 A slice is kind of a reference, so it doesn't have ownership. Slice lets us reference a contiguous sequence of elements is a collection.

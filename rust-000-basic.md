@@ -84,7 +84,7 @@ fn main() {
 ```
 
 ### Guessing Game:
-A simple terminal game, the program will generate a random number between 1 & 100, and will ask the user to guess the exact number until it's correct.
+A simple terminal game, the program will generate a random number between 1 & 100, and will ask the user to guess the exact number until it's correct
 
 ```rust
 // use std::cmp::Ordering;
