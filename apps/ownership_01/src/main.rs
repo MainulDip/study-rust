@@ -5,6 +5,7 @@ mod reference_and_borrowing;
 mod borrowing_and_mutation;
 mod slicing_without_slice;
 mod slicing_with_slice;
+mod all_slice_hack;
 
 mod another_file;
 
@@ -15,6 +16,7 @@ use reference_and_borrowing::reference_and_borrowing;
 use borrowing_and_mutation::borrowing_and_mutation;
 use slicing_without_slice::slicing_without_slice;
 use slicing_with_slice::slicing_with_slice;
+use all_slice_hack::all_slice_hacks;
 
 use another_file::another_function;
 
@@ -25,6 +27,7 @@ fn main() {
     borrowing_and_mutation();
     slicing_without_slice();
     slicing_with_slice();
+    all_slice_hacks();
 
     another_function(); // testing multi-file projects
 }

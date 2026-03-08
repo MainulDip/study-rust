@@ -17,6 +17,7 @@ fn main() {
 }
 ```
 
+
 ### `::` vs `.`:
 Or: . is for value member access, :: is for namespace member access
 
