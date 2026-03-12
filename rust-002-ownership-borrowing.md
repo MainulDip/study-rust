@@ -406,3 +406,52 @@ fn full_string(x: &String) -> &str {
     x
 }
 ```
+
+### Destructuring a borrowed tuple or tuple element/s:
+
+* Implicit borrowing (Match ergonomics):
+
+```rust
+fn main() {
+    let data = ("foo".to_string(), "bar".to_string());
+    let borrowed_data = &data;
+
+    // The variables 'x' and 'y' are implicitly of type &String
+    let (x, y) = borrowed_data; 
+
+    println!("x: {}, y: {}", x, y); 
+    // The original 'data' can still be used later
+}
+```
+
+* Explicit Reference Patterns
+
+```rust
+fn main() {
+    let data = (1, 2);
+    let borrowed_data = &data;
+
+    // The '&' in the pattern matches the reference from the right-hand side
+    let (&x, &y) = borrowed_data; 
+
+    // 'x' and 'y' are of type i32 (a copy, since i32 is Copy)
+    println!("x: {}, y: {}", x, y);
+}
+```
+
+* Using ref and ref mut
+
+```rust
+fn main() {
+    let mut data = (1, 2);
+    let borrowed_mut_data = &mut data;
+
+    // Use 'ref mut' to get mutable references to the elements
+    let (ref mut x, ref mut y) = *borrowed_mut_data;
+
+    *x = 10;
+    *y = 20;
+
+    println!("data: {:?}", data); // Output: data: (10, 20)
+}
+```
