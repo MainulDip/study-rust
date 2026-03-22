@@ -2,6 +2,9 @@
 
 Docs : https://doc.rust-lang.org/book/ch04-01-what-is-ownership.html and follow part 2 and 3 also
 
+
+* The concepts of ownership, borrowing, and slices ensure memory safety in Rust programs at compile time. The Rust language gives you control over your memory usage in the same way as other systems programming languages. But having the owner of data automatically clean up that data when the owner goes out of scope means you don’t have to write and debug extra code to get this control.
+
 Ownership is the rust's most unique feature, it enables Rust to make memory safety guarantees without needing a garbage collector. Ownership model work together with `borrowing, slices and how rust lays data out in memory`.
 
 Stack vs Heap: 
@@ -388,6 +391,49 @@ A slice is kind of a reference, so it doesn't have ownership. Slice lets us refe
 
 * In idiomatic Rust, functions do not take ownership of their arguments unless they need to, ie `fn x(arg1: &T){}`, (and the reasons for that will become clear as we keep going)
 
+```rust
+pub fn all_slice_hacks() {
+    println!("\n----------------All Slice Hacks------------------\n");
+    slice_type_examples();
+}
+
+fn slice_type_examples() {
+    let s = String::from("Hello world!");
+    let mut temp: &mut &str = &mut "Again";
+
+    let word_1 = &s[0..5];
+    let word_2 = &s[6..12];
+    println!("word_1 = {word_1} and word_2 = {word_2}");
+
+    let all_words = &s[..]; // without specifying starting and ending range will slice the full sequence
+    let hello = &s[..5]; // starting is not specified
+    let world = &s[6..]; // ending is not specified
+    println!("hello = {hello} and world = {world}");
+}
+```
+
+### Getting first word using slice:
+```rust
+fn main() {
+    let mut words: String = String::from("Hello World!");
+    let first_word_1 = first_word_from_str(&words);
+    let first_word_2 = first_word_from_string(&words);
+    // words.clear(); // if uncommented, this will throw error, as immutable reference is used later
+    println!("{first_word_1} and {first_word_2}");
+    words.clear(); // this will work, as no immutable reference is used afterwards
+}
+
+fn first_word_from_str(s: &str) -> &str {
+    let bytes = s.as_bytes();
+    for (index, &item) in bytes.iter().enumerate() {
+        if item == b' ' {
+            return &s[..index];
+        }
+    }
+    &s[..]
+}
+```
+
 ### &String vs &str:
 `&str` represents 2 types, `slice` (String sliced reference) and `string literal`. `&String` is the reference of a `String` (borrowed). 
 
@@ -405,6 +451,16 @@ main() {
 fn full_string(x: &String) -> &str {
     x
 }
+```
+
+### Slice with array:
+String slices, as you might imagine, are specific to strings. But there’s a more general slice type too. 
+Just as we might want to refer to part of a string, we might want to refer to part of an array.
+```rust
+    let a: [i32; 5] = [1, 2, 3, 4, 5];
+    let slice: &[i32] = &a[1..3];
+    assert_eq!(slice, &[2, 3]);
+    println!("{:?}", slice); // [2,3]
 ```
 
 ### Destructuring a borrowed tuple or tuple element/s:
