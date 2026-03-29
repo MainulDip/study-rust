@@ -103,7 +103,7 @@ fn main() {
 
 ### Data types 101:
 `unsigned intergers`: u8, u16, u32, u64, u128, usize
-`signed intergers`: i8, i16, i32, i64, i128, isize
+`signed integers`: i8, i16, i32, i64, i128, isize
 
 * usize and isize integers are dependent of the device architecture. If the device is 32 bit, usize/isize will be 32, for 64 bit, it will be 64
 

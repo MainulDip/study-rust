@@ -97,11 +97,39 @@ These are structs that look like a tuple. Tuple structs don’t have names assoc
 struct Color(i32, i32, i32);
 struct Point(i32, i32, i32);
 
-fn main() {
-    let black = Color(0, 0, 0);
-    let origin = Point(0, 0, 0);
+pub fn tuple_struct_call() {
+    println!("\n--------tuple struct---------\n");
 
-    // destructuring tuple struct: requires to name the type 
-    let Point(x, y, z) = origin;
+    let _black = Color(0, 0, 0);
+    let _origin = Point(0, 0, 0);
+
+    // destructuring tuple struct: requires to name the tuple struct's type
+    let Point(x, _y, _z) = _origin;
+    
+    println!("Color props are {}, {}, {} and point.x is {}", _black.0, _black.1, _black.2, x );
 }
 ```
+
+### Unite-Like struct (to implement trait later without storing data in type itself):
+Unite-like structs don't have any fields and behave similar to a `()` unit type.
+
+* Unit-like structs can be useful when you need to implement a trait on some type but don’t have any data that you want to store in the type itself.
+
+
+* no parenthesis or curly braces to define and instantiate a unite-like struct
+
+
+```rust
+struct AlwaysEqual;
+
+fn main() {
+    let subject = AlwaysEqual;
+}
+```
+
+### Struct and borrowed property (`&str`) and lifetime specifier:
+Without using `lifetimes` struct cannot hold reference/borrowed types. By using owned type, each instance of the struct own all of its data and all those will be valid until the instance is valid (until moved or dropped).
+
+* adding lifetimes [TODO]
+
+###
