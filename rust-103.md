@@ -26,7 +26,7 @@ fn main() {
 ### Struct 101:
 - same ownership/borrow rules
 - spread syntax
-- variable mapping (Field Init Shorthand)
+- variable mapping (Field Init Shorthand).......
 
 * Use struct to add meaning by labeling the data (instead of tuple)
 
