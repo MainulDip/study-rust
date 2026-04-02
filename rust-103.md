@@ -28,6 +28,8 @@ fn main() {
 - spread syntax
 - variable mapping (Field Init Shorthand)
 
+* Use struct to add meaning by labeling the data (instead of tuple)
+
 ```rust
 pub fn instantiate_struct_101() {
     let user_1 = User {
