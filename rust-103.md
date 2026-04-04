@@ -134,4 +134,39 @@ Without using `lifetimes` struct cannot hold reference/borrowed types. By using 
 
 * adding lifetimes [TODO]
 
-###
+### Derived Traits:
+Using Derived Traits, we can print struct's properties for debugging purpose.
+
+To do so, struct needs to explicitly opt in the functionality by adding outer attribute `#[derive(Debug)]` just before the struct's definition. Then we can use `{:?}`, `{struct:?}`, `{struct:#?}`, `{:#?}` and `dbg!(val_struct_or_borrowed_struct)`
+
+* dbg! macro: it returns ownership of the expression, so for calculation, its same with or without. But we can also send reference inside of the `dbg!` macro to not get the ownership.
+
+```rust
+// adding the attribute to derive the Debug trait
+// to print out a struct for debugging, we need to explicitly opt in to make that functionality available
+#[derive(Debug)]
+struct Rectangle {
+    height: u32,
+    width: u32
+}
+
+pub fn struct_debug() {
+    println!("\n---------Struct Debug Printing--------\n");
+    let rect = Rectangle{height: 100, width: 100};
+    println!("rect is {rect:?}");
+    println!("rect is {rect:#?}"); // prettier than the `:?` version
+
+
+    println!("rect printing with :?, so the rect is = {:?}", rect);
+    println!("rect printing with :?, so the rect is = {:#?}", rect);
+
+
+    let scale = 2;
+    let rect2 = Rectangle {
+        height: dbg!(30 * scale), // dbg! returns ownership of the expression’s value, the width field will get the same value as if we didn’t have the dbg!
+        width: 30
+    };
+    println!("\n---------dbg!(&v)---------\n");
+    dbg!(&rect2); // here, we are sending a reference, as we don't want to move the ownership
+}  
+```
