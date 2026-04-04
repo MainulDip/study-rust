@@ -170,3 +170,5 @@ pub fn struct_debug() {
     dbg!(&rect2); // here, we are sending a reference, as we don't want to move the ownership
 }  
 ```
+
+### Struct and Methods:

@@ -19,7 +19,7 @@ fn main() {
 
 
 ### `::` vs `.`:
-Or: . is for value member access, :: is for namespace member access
+Or: `.` is for value member access, `::` is for namespace member access.
 
 ```rust
 // usages of `.`
@@ -102,10 +102,10 @@ fn main() {
 ```
 
 ### Data types 101:
-`unsigned intergers`: u8, u16, u32, u64, u128, usize
+`unsigned integers`: u8, u16, u32, u64, u128, `usize`
 `signed integers`: i8, i16, i32, i64, i128, `isize`
 
-* usize and isize integers are dependent of the device architecture. If the device is 32 bit, usize/isize will be 32, for 64 bit, it will be 64
+* `usize` and `isize` integers are dependent of the device architecture. If the device is 32 bit, usize/isize will be 32, for 64 bit, it will be 64
 
 * A signed integer can represent both positive and negative values, while an unsigned integer can only represent non-negative (zero and positive) values.
 
