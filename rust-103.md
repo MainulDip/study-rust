@@ -253,4 +253,5 @@ fn main() {
 ```
 
 
-### Enums and Pattern matching:
+### Enumerations (`enum`), Pattern matching (`match`), `Option` and `if let`:
+Enums allow to define a type by enumerating its possible variants, ie, Option enum.
