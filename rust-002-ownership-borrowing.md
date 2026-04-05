@@ -61,7 +61,7 @@ The core is not aware of features like heap allocation, concurrency, or file I/O
 
 
 ### Rust namespace: 
-A namespace is a logical grouping of declared names. Namespaces allow the occurrence of a name in one namespace to not conflict with the same name in another namespace. In layman's terms, namespaces are used to organize code and prevent naming conflicts.
+A namespace is a logical grouping of declared names. Namespaces allow the occurrence of a name in one namespace to not conflict with the same name in another namespace. In layman's terms, namespaces are used to organize code and prevent naming conflicts
 
 ```rust
 // ---------------------- math.rs file ------------------------------

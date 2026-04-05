@@ -172,3 +172,85 @@ pub fn struct_debug() {
 ```
 
 ### Struct and Methods:
+Methods are defined in the context of a struct (or an enum or a trait object) and their first parameter is always `self` (`&self` or `&mut self`), which represents the instance of the struct the method is being called on.
+
+- the first parameter of the method (or if only param) will always be `self`
+- methods are defined inside of a `impl` (implementation) block
+- in method parameter, `&self` is shorthand for `self: &Self`.
+- within `impl` block, Self is an alias for the type that impl block is for
+- that `self` can be `&self` reference, or `self` ownership type. Also can be `&mut self`. As Methods can take ownership of self, borrow self immutably, or borrow self mutably, just as they can any other parameter.
+- method/s can have same name as prop/s. Rust compiler will detect the difference by detecting the caller parenthesis.
+- we can have multiple `impl` blocks
+
+* method with ownership type `self` as the first parameter is rare; this technique is usually used when the method transforms self into something else and you want to prevent the caller from using the original instance after the transformation.
+
+```rust
+pub fn structs_method_explore() {
+    println!("\n------------Struct's Method Exploring----------------\n");
+    let rect = Rectangle { height: 100, width: 100};
+    println!("Rectangles area is = {}, using method", rect.area());
+}
+
+#[derive(Debug)]
+struct Rectangle {
+    width: u32,
+    height: u32
+}
+
+impl Rectangle {
+    fn area(&self) -> u32 {
+        self.width * self.height
+    }
+}
+
+// we can have multiple `impl` blocks
+impl Rectangle {
+    fn is_width_valid(&self) -> bool {
+        if self.width > 0 { true } else { false } // rust doesn't have `condition ? exp : exp` like ternary syntax
+    }
+
+    // we can have same name as prop
+    fn width(&self) -> u32 {
+        // get the width of the Rectangle
+        if self.width > 0 { self.area() / self.height } else { 0 }      
+    }
+}
+```
+
+
+### Automatic referencing and de-referencing:
+In C and C++, two different operators are used for calling methods: You use . if you’re calling a method on the object directly and -> if you’re calling the method on a pointer to the object and need to dereference the pointer first. In other words, if object is a pointer, object->something() is similar to (*object).something().
+
+Rust doesn’t have an equivalent to the -> operator; instead, Rust has a feature called automatic referencing and dereferencing. Calling methods is one of the few places in Rust with this behavior.
+
+Here’s how it works: When you call a method with object.something(), Rust automatically adds in &, &mut, or * so that object matches the signature of the method. In other words, the following are the same:
+
+```rust
+// both are same
+p1.distance(&p2);
+(&p1).distance(&p2);
+```
+
+### Associated function (non method functions):
+All functions defined within an impl block are called associated functions because they’re associated with the type named after the impl. We can define associated functions that don’t have self as their first parameter (and thus are not methods) because they don’t need an instance of the type to work with. IE, String::from function that’s defined on the String type.
+
+* Associated functions that aren’t methods are often used for constructors that will return a new instance of the struct. These are often called new, but new isn’t a special name and isn’t built into the language.
+
+```rust
+impl Rectangle {
+    // To call this associated function, we use the :: syntax with the struct name
+    fn square(size: u32) -> Self {
+        Self {
+            width: size,
+            height: size,
+        }
+    }
+}
+
+fn main() {
+    let sq = Rectangle::square(3)
+}
+```
+
+
+### Enums and Pattern matching:
