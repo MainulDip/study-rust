@@ -255,3 +255,78 @@ fn main() {
 
 ### Enumerations (`enum`), Pattern matching (`match`), `Option` and `if let`:
 Enums allow to define a type by enumerating its possible variants, ie, Option enum.
+
+Where structs give you a way of grouping together related fields and data, like a Rectangle with its width and height, enums give you a way of saying a value is one of a possible set of values. 
+
+Say we need to work with IP addresses. Currently, two major standards are used for IP addresses: version four and version six. Because these are the only possibilities for an IP address that our program will come across, we can enumerate all possible variants, which is where enumeration gets its name.
+
+Any IP address can be either a version four or a version six address, but not both at the same time. That property of IP addresses makes the enum data structure appropriate because an enum value can only be one of its variants. Both version four and version six addresses are still fundamentally IP addresses, so they should be treated as the same type when the code is handling situations that apply to any kind of IP address.
+
+```rust
+enum IpAddrKind {
+    V4,
+    V6,
+}
+
+fn route(ip_kind: IpAddrKind) {}
+
+fn main() {
+    let four = IpAddrKind::V4;
+    let six = IpAddrKind::V6;
+
+    if is_ipv4 { route(four) } else { route(six) }
+}
+```
+
+### enum with struct:
+
+```rust
+enum IpAddrKind {
+    V4,
+    V6,
+}
+
+struct IpAddr {
+    kind: IpAddrKind,
+    address: String,
+}
+
+let home = IpAddr {
+    kind: IpAddrKind::V4,
+    address: String::from("127.0.0.1");
+}
+
+let loopback = IpAddr {
+    kind: IpAddrKind::V6,
+    address: String::from("[::1]"),
+}
+```
+
+### enum with associated value:
+Enum instance can also hold associated values.
+```rust
+enum IpAddr {
+    V4(String),
+    V6(String),
+}
+
+// we need custom mechanism to print or read enum's associated values, as enum does not come with a display trait implemented for its associated values
+impl IpAddr {
+    fn readValue(&self) -> String {
+        match self {
+            IpAddr::V4(v) => v.to_string(),
+            IpAddr::V6(v) => v.to_string(),
+        }
+    }
+}
+
+fn main {
+    let home = IpAddr::V4(String::from("127.0.0.1"));
+    let loopback = IpAddr::V6(String::from("[::1]"));
+
+    println!("Home ipv4 localhost is {}", home.readValue());
+    println!("Home ipv6 localhost is {}", loopback.readValue());
+}
+```
+
+* note - `::1` is the ipv6 address for localhost (127.0.0.1 is ipv4). To navigate inside of a browser, use `http://[::1]` or with port `http://[::1]:8080`. The `[]` is crucial, as it stop the browser to think it as a port number.
