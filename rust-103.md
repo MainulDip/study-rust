@@ -303,7 +303,7 @@ let loopback = IpAddr {
 ```
 
 ### enum with associated value:
-Enum instance can also hold associated values.
+Enum instance can also hold associated values of any type. But to read those values latter, we need to our own way defined using match statement.
 ```rust
 enum IpAddr {
     V4(String),
@@ -330,3 +330,57 @@ fn main {
 ```
 
 * note - `::1` is the ipv6 address for localhost (127.0.0.1 is ipv4). To navigate inside of a browser, use `http://[::1]` or with port `http://[::1]:8080`. The `[]` is crucial, as it stop the browser to think it as a port number.
+
+### Enum and Struct:
+Enum provides grouping mechanism with lesser code than writing multiple struct for same functionality. 
+
+* with enum, we can write functions to match the enumerated types and compute, but with multiple different structs, it not possible to do so.
+
+```rust
+enum Message {
+    Quit,
+    Move { x: i32, y: i32 },
+    Write(String),
+    ChangeColor(i32, i32, i32),
+}
+
+
+// Struct equivalent of the `Message` enum
+
+struct QuitMessage; // unit struct
+struct MoveMessage { // struct with named field (regular struct)
+    x: i32,
+    y: i32,
+}
+struct WriteMessage(String); // tuple struct
+struct ChangeColorMessage(i32, i32, i32); // tuple struct
+
+```
+
+### enum methods:
+Enum's methods are defined the same way as struct's, using `impl` block.
+
+```rust
+enum IpAddr {
+    V4(String),
+    V6(String),
+}
+
+impl IpAddr {
+    fn readValue(&self) -> String {
+        match self {
+            IpAddr::V4(v) => v.to_string(),
+            IpAddr::V6(v) => v.to_string(),
+        }
+    }
+}
+
+
+fn main {
+    let home = IpAddr::V4(String::from("127.0.0.1"));
+    let loopback = IpAddr::V6(String::from("[::1]"));
+
+    println!("Home ipv4 localhost is {}", home.readValue());
+    println!("Home ipv6 localhost is {}", loopback.readValue());
+}
+```

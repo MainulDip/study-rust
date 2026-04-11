@@ -4,8 +4,8 @@ pub fn use_enum_associated_value() {
     let home = IpAddr::V4(String::from("127.0.0.1"));
     let loopback = IpAddr::V6(String::from("[::1]"));
 
-    println!("Home ipv4 localhost is {}", home.readValue());
-    println!("Home ipv6 localhost is {}", loopback.readValue());
+    println!("Home ipv4 localhost is {}", home.read_value());
+    println!("Home ipv6 localhost is {}", loopback.read_value());
 }
 
 enum IpAddr {
@@ -14,7 +14,7 @@ enum IpAddr {
 }
 
 impl IpAddr {
-    fn readValue(&self) -> String {
+    fn read_value(&self) -> String {
         match self {
             IpAddr::V4(v) => v.to_string(),
             IpAddr::V6(v) => v.to_string(),

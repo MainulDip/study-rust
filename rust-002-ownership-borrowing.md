@@ -136,7 +136,7 @@ Types that have known size at compile time are stored entirely on the stack, as 
     println!("x = {x}, y = {y}");
 ```
 
-* copy trait: Usually all stack-stored data types already comes with `copy` trait implemented. So they can be copied rather than move. Custom type can also implement `copy` trait, unless the type or parts of it implement `drop` trait (heap stored move).
+* copy trait: Usually all stack-stored data types already comes with `copy` trait implemented. So they can be copied rather than move. Custom type can also implement `copy` trait, unless the type or parts of it implement `drop` trait (heap stored move)
 
 
 * copy trait implemented types

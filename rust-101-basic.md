@@ -274,7 +274,7 @@ fn main() {
 
 A `String` is stored as a vector of bytes (Vec<u8>), but guaranteed to always be a valid UTF-8 sequence. String is heap allocated, growable and not null terminated.
 
-`&str` (String pointer) is a slice (&[u8]) that always points to a valid UTF-8 sequence, and can be used to view into a String, just like &[T] is a view into Vec<T>.
+`&str` (String pointer) is a slice (&[u8]) that always points to a valid UTF-8 sequence, and can be used to view into a String, just like &[T] is a view into Vec<T>
 
 ```rust
 fn main() {
@@ -472,14 +472,14 @@ fn main() {
         destructuring_tuple.0, destructuring_tuple.1
     );
 
-    // Calling function with the vector parameter
+    // Calling function with the vector parameter (borrowing)
     let a_vector: Vec<i32> = vec![1,2,3,4];
     let vec_fn_res: i32 = sum_list(&a_vector);
     println!("The combined result of the a_vector is {}", vec_fn_res);
 }
 ```
 
-### Generics :
+### Generics:
 ```rust
 use std::ops::Add; // operators Add to implement Generics computation
 
