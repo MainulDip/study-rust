@@ -384,3 +384,74 @@ fn main {
     println!("Home ipv6 localhost is {}", loopback.readValue());
 }
 ```
+
+
+### Option enum (std library):
+Rust does not have nulls, but it does have an enum `Option<T>` that can encode the concept of a value being present or absent.
+
+The Option<T> enum is included in the prelude; you don’t need to bring it into scope explicitly. Its variants `Some` and `None` are also included in the prelude and can be used directly without the Option:: prefix. The Option<T> enum is still just a regular enum, and Some(T) and None are still variants of type Option<T>.
+
+```rust
+enum Option<T> {
+    None,
+    Some(T),
+}
+
+fn main() {
+    let some_number = Some(5);
+    let some_char = Some('e');
+    let absent_number: Option<i32> = None;
+}
+```
+
+### Option<T> operation with simple Value type:
+
+```rust
+pub fn option_handle_a() {
+    println!("\n----------------Option<T> Handling------------------\n");
+    let x: i8 = 5;
+    let y: Option<i8> = Some(5);
+
+    match y {
+        Some(v) => println!("v + x = {}", v + x),
+        None => println!("y is None"),
+    }
+
+
+    println!("option_unwrapping : {}", option_unwrapping());
+    println!("option_if_let : {}", option_if_let());
+
+    match option_with_map() {
+        Some(val) => println!("match Some arm's value is {val}"),
+        None => println!("Match None arm executed"),
+    }
+}
+
+fn option_unwrapping() -> i8 {
+    let x: i8 = 5;
+    let y: Option<i8> = Some(5);
+    let sum = x + y.unwrap_or(0);
+    sum
+}
+
+fn option_if_let() -> i8 {
+    let x: i8 = 5;
+    let y: Option<i8> = Some(5);
+
+    if let Some(val) = y {
+        let sum = x + val;
+        sum
+    } else {
+        let sum = x + 0;
+        sum
+    }
+}
+
+fn option_with_map() -> Option<i8> {
+    let x: i8 = 5;
+    let y: Option<i8> = Some(5);
+
+    let sum = y.map(|val| x + val);
+    sum
+}
+```
