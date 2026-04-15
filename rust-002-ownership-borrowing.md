@@ -104,7 +104,7 @@ When a heap-stored data, ie, `String` type of the standard library, is copied in
 * double free error: when two variables are pointing to the same data (copied to variable-2 from variable-1), when this 2 variables go out-of-scope, they will both try to free the same memory. Rust solve this by only making the later variable valid (owner)
 
 ```rust
-// this will not work
+// this will not work/compile
 let s1 = String::from("hello");
 let s2 = s1;
 
@@ -144,7 +144,7 @@ Types that have known size at compile time are stored entirely on the stack, as 
 - All the integer types, such as u32.
 - The Boolean type, bool, with values true and false.
 - All the floating-point types, such as f64.
-- The character type, char.
+- The character type, char
 - Tuples, if they only contain types that also implement Copy. For example, (i32, i32) implements Copy, but (i32, String) does not.
 
 ### Ownership and function (without borrowing `&`):

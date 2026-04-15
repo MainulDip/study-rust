@@ -304,6 +304,8 @@ let loopback = IpAddr {
 
 ### enum with associated value:
 Enum instance can also hold associated values of any type. But to read those values latter, we need to our own way defined using match statement.
+
+
 ```rust
 enum IpAddr {
     V4(String),
@@ -455,3 +457,90 @@ fn option_with_map() -> Option<i8> {
     sum
 }
 ```
+
+### `match` Control Flow:
+It's the `switch` eqevalent for language like `swift`, `kotlin`.
+Works best with enum. 
+
+`match` statement is consist of arm/s. An arm has two parts: a pattern (for matching case) and some code (to execute), separated by `=>`. Multiline codes are placed using `{}`, when braces are used, `,` after each arm becomes optional.
+
+```rust
+#[derive(Debug)] // so we can inspect the state in a minute
+enum UsState {
+    Alabama,
+    Alaska,
+    // others
+}
+
+enum Coin {
+    Penny,
+    Nickel,
+    Dime,
+    Quarter(UsState),
+}
+
+fn value_in_cents(coin: Coin) -> u8 {
+    match coin {
+        Coin::Penny => {
+            println!("Lucky penny!");
+            1
+        } // multiline, as braces are used, comma is optional here
+        Coin::Nickel => 5,
+        Coin::Dime => 10,
+        Coin::Quarter(state) => {
+            println!("State quarter from {state:?}!");
+            25
+        }
+    }
+}
+```
+
+
+### `Option<T>` and match:
+
+```rust
+fn plus_one(x: Option<i32>) -> Option<i32> {
+    match x {
+        None => None,
+        Some(i) => Some(i + 1),
+    }
+}
+
+let five = Some(5);
+let six = plus_one(five);
+let none = plus_one(None);
+```
+
+### `other` as Catch-All Pattern and the `_` placeholder:
+`match` needs to provide all possible cases. When we're not evaluating enum, we have to provide default/fallback case by using `other` or a underscore `_`.
+
+* `other` when we need to use the injected value, and `_` when we don't need.
+
+```rust
+let dice_roll_first = 9;
+
+match dice_roll_first {
+    3 => add_fancy_hat(),
+    7 => remove_fancy_hat(),
+    other => move_player(other),
+}
+
+fn add_fancy_hat() {}
+fn remove_fancy_hat() {}
+fn move_player(num_spaces: u8) {}
+
+
+let dice_roll_first = 7;
+
+match dice_roll_second {
+    7 => println!("7"),
+    _ => println!("Something else"),
+}
+
+match dice_roll_second {
+    7 => println!("7"),
+    _ => (), // when we're not going to execute anything, just use () unit type
+}
+```
+
+### Concise control flow using `If let` and `let...else`:
