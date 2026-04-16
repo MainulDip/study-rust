@@ -241,7 +241,7 @@ fn calculate_length(s: String) -> (String, usize) {
 ```
 
 ### Reference and Borrowing | Retain ownership of the original variable:
-Instead of passing a owner as a function parameter, we can pass a reference using `&`. This way we can retain the original owner and at the same time utilize the value without messing with ownership. In rust, the act of creating a reference is called `Borrowing`.
+Instead of passing a owner as a function parameter, we can pass a reference using `&`. This way we can retain the original owner and at the same time utilize the value without messing with ownership. In rust, the act of creating a reference is called `Borrowing`.......
 
 ```rust
 pub fn reference_and_borrowing() {

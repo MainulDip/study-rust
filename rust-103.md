@@ -544,3 +544,116 @@ match dice_roll_second {
 ```
 
 ### Concise control flow using `If let` and `let...else`:
+if-let is for handling matched value and ignoring the rest. Its kinda syntactic sugar as we need less boilerplate. 
+
+```rust
+// using `if let`
+let config_max = Some(3u8);
+if let Some(any_value) = config_max {
+    println!("The maximum is {any_value}");
+}
+
+// same using match, which use more code
+match config_max {
+    Some(any_value) => println!("The maximum is {any_value}"),
+    _ => (),
+}
+```
+
+`if let` can also followed by and `else`, which will act similar to the match's `_` case (handling other/fallback case without caring about the matched value)
+
+```rust
+let mut count = 0;
+if let Coin::Quarter(state) = coin {
+    println!("State quarter from {state:?}!");
+} else {
+    count += 1;
+}
+
+#[derive(Debug)] // so we can inspect the state in a minute
+enum UsState {
+    Alabama,
+    Alaska,
+    // others
+}
+
+enum Coin {
+    Penny,
+    Nickel,
+    Dime,
+    Quarter(UsState),
+}
+```
+
+
+### `if let` when returning value and binding:
+The common pattern is to perform some computation when a value is present and return a default value otherwise.
+
+* `let...else` is better than this version, see below
+
+```rust
+mpl UsState {
+    fn existed_in(&self, year: u16) -> bool {
+        match self {
+            UsState::Alabama => year >= 1819,
+            UsState::Alaska => year >= 1959,
+            // -- snip --
+        }
+    }
+}
+
+// using if let to match on the type of coin, introducing a state variable within the body of the condition
+fn describe_state_quarter(coin: Coin) -> Option<String> {
+    if let Coin::Quarter(state) = coin {
+        if state.existed_in(1900) {
+            Some(format!("{state:?} is pretty old, for America!"))
+        } else {
+            Some(format!("{state:?} is relatively new."))
+        }
+    } else {
+        None
+    }
+}
+
+// can be re-written (more readable)
+fn describe_state_quarter(coin: Coin) -> Option<String> {
+    let state = if let Coin::Quarter(state) = coin {
+        state
+    } else {
+        return None;
+    };
+
+    if state.existed_in(1900) {
+        Some(format!("{state:?} is pretty old, for America!"))
+    } else {
+        Some(format!("{state:?} is relatively new."))
+    }
+}
+```
+
+### Happy path `let...else` for returning value and binding with variable:
+The let...else syntax takes a pattern on the left side and an expression on the right, very similar to if let, but it does not have an if branch, only an else branch. If the pattern matches, it will bind the value from the pattern in the outer scope. If the pattern does not match, the program will flow into the else arm, which must return from the function.
+
+```rust
+// this function will return either `Some(String)` or `None`
+fn describe_state_quarter(coin: Coin) -> Option<String> {
+    // If the provide coin is `Coin::Quarter(state)`, the state variable will be available for later use, otherwise, it will follow the else fallback, which is returning `None` here
+    let Coin::Quarter(state) = coin else {
+        return None;
+    };
+
+    // if the previous block binding (state variable) is success, this if-else block will be evaluated
+    if state.existed_in(1900) {
+        Some(format!("{state:?} is pretty old, for America!"))
+    } else {
+        Some(format!("{state:?} is relatively new."))
+    }
+}
+
+enum Coin {
+    Penny,
+    Nickel,
+    Dime,
+    Quarter(UsState),
+}
+```
