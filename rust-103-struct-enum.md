@@ -231,7 +231,7 @@ p1.distance(&p2);
 (&p1).distance(&p2);
 ```
 
-### Associated function (non method functions):
+### Associated/non-method function (functions without self as 1st parameter):
 All functions defined within an impl block are called associated functions because they’re associated with the type named after the impl. We can define associated functions that don’t have self as their first parameter (and thus are not methods) because they don’t need an instance of the type to work with. IE, String::from function that’s defined on the String type.
 
 * Associated functions that aren’t methods are often used for constructors that will return a new instance of the struct. These are often called new, but new isn’t a special name and isn’t built into the language.
