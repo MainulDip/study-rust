@@ -22,3 +22,22 @@ Cargo (rust package manager and build tool) by convention follows
 
 
 *  If a package contains src/main.rs and src/lib.rs, it has two crates: a binary and a library, both with the same name as the package. A package can have multiple binary crates by placing files in the src/bin directory: Each file will be a separate binary crate.
+
+### Control Scope & Privacy with module (`paths`, `use`, `pub`, `as`):
+- paths - allows to use name items
+- use - keyword that bring path into scope
+- pub - keyword that make something public
+- as - casting
+- mod - for defining a module or module tree (containing other modules)
+- external package -
+- glob operator
+
+
+### Module System:
+Module are used to group related definitions together. Codes can be navigated based on the groups (rather than reading unrelated codes).
+
+Modules are defined by `mod` keyword followed by the name of the module.
+
+* private & public: In Rust, all items (functions, methods, structs, enums, modules, and constants) are private to parent modules by default. Use `pub` keyword to make anything public.
+
+* Items in a parent module can’t use the private items inside child modules, but items in child modules can use the items in their ancestor modules. This is because child modules wrap and hide their implementation details, but the child modules can see the context in which they’re defined.
