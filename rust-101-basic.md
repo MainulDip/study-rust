@@ -226,7 +226,7 @@ fn main() {
     println!("Length: {}", arr_1.len());
 
     // loop
-    let mut loop_idx: usize = 0; // index must be of usize
+    let mut loop_idx: usize = 0; // index must be of `usize`
 
     loop {
         if arr_1[loop_idx] % 2 == 0 {

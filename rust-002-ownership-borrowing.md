@@ -94,7 +94,7 @@ fn main() {
 - `::` : The namespace separator, used to access items within a module (e.g., std::collections::HashMap). 
 
 ### Ownership (heap) | coping is actually moving the ownership:
-A String of made of 3 parts (std String)
+A String is made of 3 parts (for std library String)
 - a pointer to the stack memory, that holds the content of the String (data)
 - a length (actual) of the String
 - a capacity, the total amount of memory in bytes that the allocator has allocated for the String  
@@ -127,7 +127,7 @@ println!("s1 = {s1}, s2 = {s2}"); // valid
 ```
 
 ### Stack only Data: Copy trait:
-Types that have known size at compile time are stored entirely on the stack, as stack stored data is quick to make, coping data to a new variable perform an actual copy (not move like heap stored type). After coping, the old variable doesn't get invalid. Also there is no difference between shallow and deep copy in this case, all are same, also calling `clone` method will not do any special that the default copy.
+Types that have known size at compile time are stored entirely on the stack, as stack stored data is quick to make, coping data to a new variable perform an actual copy (not move like heap stored type). After coping, the old variable doesn't get invalid. Also there is no difference between shallow and deep copy in this case, all are same, also calling `clone` method will not do any special that the default copy
 
 ```rust
     let x = 5;
