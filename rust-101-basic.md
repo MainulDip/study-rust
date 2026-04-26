@@ -1,5 +1,5 @@
 ### Importing (`using`) standered and external lilbrary:
-Libraries are called `crates` in rust. `https://crates.io/` is the official place for external libraries.
+Libraries are called `crates` in rust. `https://crates.io/` is the official place for external libraries.......
 
 * external libraries/crates needs to be included inside of the `Cargo.toml` file under `[Dependencies]` section, to be used/imported.......
 

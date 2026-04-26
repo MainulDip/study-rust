@@ -17,10 +17,25 @@ mod front_of_house {
     }
 }
 
+
 pub fn eat_at_restaurant() {
     // absolute path
     crate::front_of_house::hosting::add_to_waitlist();
 
     // relative path
     front_of_house::hosting::add_to_waitlist();
+}
+
+// super with relative path: super can be used to call parent defined (outer scoped function) from inside a scoped module 
+fn some_other_task() {
+    println!("Do something now");
+}
+
+mod back_of_house {
+    fn fix_incorrect_order() {
+        super::some_other_task();
+        cook_order();
+    }
+
+    fn cook_order() { println!("Cooking the food") }
 }

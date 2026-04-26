@@ -121,12 +121,86 @@ pub fn eat_at_restaurant() {
     // absolute path
     crate::front_of_house::hosting::add_to_waitlist();
 
-    // relative path
+    // relative path (Starting with a module name means that the path is relative)
     front_of_house::hosting::add_to_waitlist();
 }
 ```
 
 
-* when a package containing both binary and library crate (src/main.rs & src/lib.rs), other project can benefit by the library crate by using functionality from there.
+* when a package containing both binary and library crate (src/main.rs & src/lib.rs), other project can benefit by the library crate by using functionality from there, ie, `crate::module::fn_name()`
+
+* when available, both `src/main.rs` and `src/lib.rs` are combined to create a module name `crate` at the root of the crate's module structure, known as module tree. Hence we can refer using `crate::module...`. Both crates will have the package name by default
+
+*. when both `src/main.rs` binary crate and `src/lib.rs` library crate are available, The module tree should be defined in `src/lib.rs`. Then, any public items can be used in the binary crate by starting paths with the name of the package. The binary crate becomes a user of the library crate just like a completely external crate would use the library crate: It can only use the public API. 
 
 
+### `super::` keyword with relative path:
+
+```rust
+// super with relative path: super can be used to call parent defined (outer scoped function) from inside a scoped module 
+fn some_other_task() {
+    println!("Do something now");
+}
+
+mod back_of_house {
+    fn fix_incorrect_order() {
+        super::some_other_task();
+        cook_order();
+    }
+
+    fn cook_order() { println!("Cooking the food") }
+}
+```
+
+
+### `pub` with Struct vs Enum (not same):
+Making a `Struct` public won't make any of it's field/s public. We need to explicitly annotate those fields with `pub` to make public. Struct with one or more private fields needs associated function to create instance of it. 
+
+But denoting an enum with `pub` keyword, will make all enum cases public.
+
+```rust
+// `pub` with struct
+mod back_of_house {
+    pub struct Breakfast {
+        pub toast: String,
+        seasonal_fruit: String,
+    }
+
+    impl Breakfast {
+        pub fn summer(toast: &str) -> Breakfast {
+            Breakfast {
+                toast: String::from(toast),
+                seasonal_fruit: String::from("peaches"),
+            }
+        }
+    }
+}
+
+pub fn eat_at_restaurant() {
+    // Order a breakfast in the summer with Rye toast.
+    let mut meal = back_of_house::Breakfast::summer("Rye");
+    // Change our mind about what bread we'd like.
+    meal.toast = String::from("Wheat");
+    println!("I'd like {} toast please", meal.toast);
+
+    // The next line won't compile if we uncomment it; we're not allowed
+    // to see or modify the seasonal fruit that comes with the meal.
+    // meal.seasonal_fruit = String::from("blueberries");
+}
+```
+
+* `pub` with enum makes everything public
+
+```rust
+mod back_of_house {
+    pub enum Appetizer {
+        Soup,
+        Salad,
+    }
+}
+
+pub fn eat_at_restaurant() {
+    let order1 = back_of_house::Appetizer::Soup;
+    let order2 = back_of_house::Appetizer::Salad;
+}
+```
