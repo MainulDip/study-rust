@@ -391,7 +391,7 @@ fn main {
 ### Option enum (std library):
 Rust does not have nulls, but it does have an enum `Option<T>` that can encode the concept of a value being present or absent.
 
-The Option<T> enum is included in the prelude; you don’t need to bring it into scope explicitly. Its variants `Some` and `None` are also included in the prelude and can be used directly without the Option:: prefix. The Option<T> enum is still just a regular enum, and Some(T) and None are still variants of type Option<T>.......
+The `Option<T>` enum is included in the prelude; you don’t need to bring it into scope explicitly. Its variants `Some` and `None` are also included in the prelude and can be used directly without the Option:: prefix. The Option<T> enum is still just a regular enum, and Some(T) and None are still variants of type Option<T>.......
 
 ```rust
 enum Option<T> {

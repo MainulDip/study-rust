@@ -39,3 +39,20 @@ mod back_of_house {
 
     fn cook_order() { println!("Cooking the food") }
 }
+
+// `use` keyword and scope
+use front_of_house::hosting;
+
+fn test_use() {
+    hosting::add_to_waitlist(); // works because its the same scope as the `use` been defined
+}
+
+mod other_module {
+use super::front_of_house::hosting::add_to_waitlist;
+    fn test_use() {
+        super::hosting::add_to_waitlist(); // works
+        // hosting::add_to_waitlist() // will not work in this scope, have to navigate out of its scope
+        add_to_waitlist(); // works, as we've brought the function into our scope using `use` keyword
+
+    }
+}

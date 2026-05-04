@@ -204,3 +204,138 @@ pub fn eat_at_restaurant() {
     let order2 = back_of_house::Appetizer::Salad;
 }
 ```
+
+
+### shortcut with `use` and it's Scope with module `mod`:
+Creating shortcut with `use` keyword and using from a module scope always involve getting the right scope.
+
+We can use `super::` to bring the shortcut into our current scope when the use is defined in the parent module
+
+```rust
+// `use` keyword and scope
+use front_of_house::hosting;
+
+fn test_use() {
+    hosting::add_to_waitlist(); // works because its the same scope as the `use` been defined
+}
+
+mod other_module {
+use super::front_of_house::hosting::add_to_waitlist;
+    fn test_use() {
+        super::hosting::add_to_waitlist(); // works
+        // hosting::add_to_waitlist() // will not work in this scope, have to navigate out of its scope
+        add_to_waitlist(); // works, as we've brought the function into our scope using `use` keyword
+
+    }
+}
+```
+
+
+### Naming conflict, idiomatic (established convention) usages of `use` path and re-naming with `as`:
+
+Sometimes we differentiate library brought module from local module by not creating pin-point shortcut. IE, `SomeBaseModule::Submodule` instead of `SomeBase_Module::Submodule::Exact_Function`. So we can call brought module by `Submodule::Exact_Function()` and local function by just `local_function()` directly. This is idiomatic practice.
+
+
+* idiomatic `use`: Bringing the function’s parent module into scope with `use` means we have to specify the parent module when calling the function. Specifying the parent module when calling the function makes it clear that the function isn’t locally defined while still minimizing repetition of the full path.
+
+```rust
+// idiomatic way to bring the standard library’s HashMap struct into the scope of a binary crate
+
+use std::collections::HashMap;
+
+fn main() {
+    let mut map = HashMap::new();
+    map.insert(1, 2);
+}
+```
+
+* Naming conflict resolution: Rust doesn't allow bringing two modules with same name using `use`. Bringing the parent module may solve this conflict.
+
+```rust
+// Naming conflict resolution
+// bringing two Result types into scope that have the same name but different parent modules
+use std::fmt;
+use std::io;
+
+fn function1() -> fmt::Result {
+    // --snip--
+}
+
+fn function2() -> io::Result<()> {
+    // --snip--
+}
+```
+
+* Naming conflict can also be resolved by assigning a new local name for the created short-cut module
+
+```rust
+use std::fmt::Result;
+use std::io::Result as IoResult;
+
+fn function1() -> Result {
+    // --snip--
+}
+
+fn function2() -> IoResult<()> {
+    // --snip--
+}
+```
+
+### `pub use` to re-export name/s:
+`pub` and `use` can be combined, so that code outside of the `use`'s scope can call that. By this, we're bringing an item into scope, at the same time making that item available for others to bring into their scope.
+
+```rust
+mod front_of_house {
+    pub mod hosting {
+        pub fn add_to_waitlist() {}
+    }
+}
+
+pub use crate::front_of_house::hosting;
+// Now that this pub use has re-exported the hosting module from the root module, external code can use the path restaurant::hosting::add_to_waitlist() to call this
+
+// Before this change, external code would have to call the add_to_waitlist function by using the path `restaurant::front_of_house::hosting::add_to_waitlist()`
+
+// which also would have required the front_of_house module to be marked as `pub`.
+
+pub fn eat_at_restaurant() {
+    hosting::add_to_waitlist();
+}
+```
+
+### Mechanism of External Package usages:
+When we add dependency to the `Cargo.toml`, that dependency can be referred by it's name as the crate root.
+
+ie, if we add `rand = "0.8.5"` in the Cargo.toml, then we call `use rand::...` to access all the library features.
+
+```rust
+use rand::Rng;
+
+fn main() {
+    let secret_number = rand::thread_rng().gen_range(1..=100);
+}
+```
+
+* Note: the code above, creates shortcut for `Rng` trait, which let us access the `gen_range()` function.
+
+* Note: creating shortcut/importing a trait, makes it's public methods (or generic methods) available for the scope. Let's dive deeper while exploring trait.
+
+```rust
+// use rand::Rng; // we're only bringing the Rng trait's scope
+// we can also create shortcut (& import) both `thread_rng` and `gen_range` separately, and use the shortcut, it's the same
+use rand::{thread_rng, Rng};
+
+fn main() {
+    // here, we're directly accessing the `rand` crate's thread_rnd function and calling gen_range (which comes with the Rng trait, we imported/shortcut earlier)
+    let secret_number = rand::thread_rng().gen_range(1..10);
+
+    // here we're using the shortcut for `thread_rng`
+    let secret_number_2 = thread_rng().gen_range(1..=100);
+
+    // directly calling `Rng` trait's function, without using any `use` block to import
+    let secret_number_3 = rand::Rng::gen_range(&mut rand::thread_rng(), 1..=100);
+
+    // using `use rand::{thread_rng, Rng}`, but differently, starting from `Rng::`
+    let secret_number = Rng::gen_range(&mut thread_rng(), 1..=100);
+}
+```
