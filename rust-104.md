@@ -339,3 +339,67 @@ fn main() {
     let secret_number = Rng::gen_range(&mut thread_rng(), 1..=100);
 }
 ```
+
+### `mod` declaration for importing/path-bringing, local vs library:
+when using component or helper function within local packages, importable/short-cut-able things must be declared as `mod`. But for external library (included by Cargo.toml), we don't need to declare importable component as mod.
+
+From external packages/libraries we can import any public component (components prefixed with `pub` keyword).
+
+
+### Minimize (vertical) lines with `nested` paths:
+Nested paths are defined by - specifying the common part of the path, followed by two colons, and then curly brackets around a list of the parts of the paths that differ
+
+We can also pass `self` when we also need parent and child components separately
+
+```rust
+// --snip--
+use std::cmp::Ordering;
+use std::io;
+// --snip--
+ 
+// can be re-written with nested paths
+use std::{cmp::Ordering, io};
+
+// usages of self, when we need parent and child at the same time
+use std::io;
+use std::io::Write;
+// can be re-written to
+use std::io::{self, Write};
+```
+
+### Importing items with the Globe `*` operator:
+Using `*` with `use` statement, all public items can be brought in the current scope.
+
+```rust
+use std::collections::*;
+```
+
+* Using globe operator can create conflict with local naming. It is often used when testing to bring everything under test
+
+### Separating module into different files:
+When we define a module without its body, the compiler will automatically search for that module that having the same filename as the module declaration. For child module, compiler will search the file–as-module-name inside a directory named after the parent module. 
+
+```rust
+// Start of src/lib.rs file, its the rood for library crate
+mod front_of_house;
+
+pub use crate::front_of_house::hosting;
+
+pub fn eat_at_restaurant() {
+    hosting::add_to_waitlist();
+}
+
+// ------ End of src/lib.rs file ------------
+
+// src/front_of_house.rs
+pub mod hosting; // as this is a child module, the compiler will search for hosting.rs file inside of `front_of_house` directory
+
+// ------------ End of src/front_of_house.rs file -----------
+
+// Start of src/front_of_house/hosting.rs
+pub fn add_to_waitlist() {}
+```
+
+* Older style for file paths (`mod.rs`): For a module named `mod front_of_house` in the crate root, according to older specs, the compiler will search inside of `src/front_of_house/mod.rs`.
+
+

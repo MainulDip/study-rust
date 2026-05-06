@@ -19,7 +19,7 @@ fn main() {
 
 
 ### `::` vs `.`:
-`.` is for value member access, `::` is for namespace member access. IE, crate or trait's namespace. Also for calling struct's associated functions (function without self as param, to create instance)
+`.` is for value member access, `::` is for namespace member access. IE, crate or trait's namespace. Also for calling struct's associated functions (function without self as param, to create instance).......
 
 ```rust
 // usages of `.`

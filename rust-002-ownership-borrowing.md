@@ -141,7 +141,7 @@ Types that have known size at compile time are stored entirely on the stack, as 
 
 * copy trait implemented types
 
-- All the integer types, such as u32.
+- All the integer types, such as u32
 - The Boolean type, bool, with values true and false.
 - All the floating-point types, such as f64.
 - The character type, char
