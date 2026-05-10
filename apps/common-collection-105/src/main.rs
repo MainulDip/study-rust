@@ -1,3 +1,5 @@
+mod multiple_types_with_enum;
+
 use std::vec;
 
 fn main() {
@@ -32,7 +34,12 @@ fn main() {
         *i += 10; // we need to deference for further assignment in this case
         println!("i after transformation is = {i}");
     }
-    println!("vec_iter still valid as we've not moved the ownership yet, proof = {:?}", vec_iter);
+    println!("vec_iter still valid as we've not moved the ownership yet, proof = {:?}", vec_iter); // but it had been modified by the previous for-in loop to `[11, 12, 13]`
 
-    // We cannot read 
+    // Same borrowing rules applied here, We cannot read an immutable borrowed property after it is also been mutably borrowed
+    let mut some_vector = vec![1, 2, 3];
+    let immutable_borrow_vec_element = &some_vector[2];
+    some_vector.push(4);
+    // println!("immutable_borrow_vec_element = {immutable_borrow_vec_element}"); // will throw error, not possible to read after it had been modified as borrowed rules applies
+    // aka, you cannot read old variable after it's been borrowed mutably.
 }

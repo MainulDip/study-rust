@@ -80,12 +80,11 @@ pub struct Asparagus {}
 
 - as - casting
 
-- mod - for defining a module or module tree (containing other modules)
+- mod - for declaring a module or module tree (containing other modules). Should start from the root file
 
-- external package -
+- external package - can be accessed by `external_package_name::specific_module_name` or by creating shortcut by `use external_package_name::module_name`
 
-- glob operator
-
+- glob operator `*`
 
 ### Module System to group related code:
 Module are used to group related definitions together. Codes can be navigated based on the groups (rather than reading unrelated codes).
@@ -152,7 +151,6 @@ mod back_of_house {
 }
 ```
 
-
 ### `pub` with Struct vs Enum (not same):
 Making a `Struct` public won't make any of it's field/s public. We need to explicitly annotate those fields with `pub` to make public. Struct with one or more private fields needs associated function to create instance of it. 
 
@@ -204,6 +202,19 @@ pub fn eat_at_restaurant() {
     let order2 = back_of_house::Appetizer::Salad;
 }
 ```
+
+### Module Root and hierarchy (Tree):
+When working only binary crate, (ie, only main.rs file as root), `mod` declaration should start from the parent/root module (ie, main.rs).
+
+In Rust, the mod keyword is a declaration, not an import. The `mod` module declaration must always start from the parent module to establish its place in the crate's hierarchy.
+
+Rust builds a module tree starting from the "root" file (usually main.rs or lib.rs).
+
+
+- Declaration: 
+    Declaring `mod my_module;` in main.rs, you are telling the compiler: "There is a module named my_module, and its contents are in the file my_module.rs".
+- The Sibling/Sub Module rule: 
+    If you put mod my_module; inside my_module.rs, the compiler would look for a nested submodule at src/my_module/my_module.rs, which is not what you intended.
 
 
 ### shortcut with `use` and it's Scope with module `mod`:
