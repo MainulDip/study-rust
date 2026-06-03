@@ -1,6 +1,11 @@
 mod multiple_types_with_enum;
+mod utf8_string;
+mod string_iteration;
 
 use std::vec;
+
+use string_iteration::string_iteration_init;
+use utf8_string::utf8_string_init;
 
 fn main() {
     println!(" Playing with vector 101 ------------------------- ");
@@ -41,5 +46,10 @@ fn main() {
     let immutable_borrow_vec_element = &some_vector[2];
     some_vector.push(4);
     // println!("immutable_borrow_vec_element = {immutable_borrow_vec_element}"); // will throw error, not possible to read after it had been modified as borrowed rules applies
-    // aka, you cannot read old variable after it's been borrowed mutably.
+    // aka, you cannot read old variable after it's been borrowed mutably. 
+
+    println!("\n\n---------------Playing with string--------------------\n\n");
+
+    utf8_string_init();
+    string_iteration_init();
 }
