@@ -1,11 +1,13 @@
 mod multiple_types_with_enum;
 mod utf8_string;
 mod string_iteration;
+mod hashmap_init;
 
 use std::vec;
 
 use string_iteration::string_iteration_init;
 use utf8_string::utf8_string_init;
+use hashmap_init::hashmap_intro;
 
 fn main() {
     println!(" Playing with vector 101 ------------------------- ");
@@ -52,4 +54,10 @@ fn main() {
 
     utf8_string_init();
     string_iteration_init();
+
+    
+
+
+    println!("\n\nHashmap Playgrounds\n\n");
+    hashmap_intro();
 }

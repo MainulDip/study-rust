@@ -20,6 +20,6 @@ pub fn string_iteration_init() {
     let s = String::from("কাক");
     let string_slice_valid = &s[0..3];
     println!("{string_slice_valid}"); // will print "ক", it's a valid character in bengali language
-    let string_slice_not_valid = &s[0..1];
-    println!("{string_slice_not_valid}"); // will panic as the first byte is not a valid character, it needs 3 byte to form character "ক"
+    // let string_slice_not_valid = &s[0..1]; // will panic as the first byte is not a valid character, it needs 3 byte to form character "ক"
+    // println!("{string_slice_not_valid}"); // before reaching this point, the program will panic (to create a variable based on non character slice)
 }
