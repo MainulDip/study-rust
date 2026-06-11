@@ -360,7 +360,7 @@ From external packages/libraries we can import any public component (components 
 ### Minimize (vertical) lines with `nested` paths:
 Nested paths are defined by - specifying the common part of the path, followed by two colons, and then curly brackets around a list of the parts of the paths that differ
 
-We can also pass `self` when we also need parent and child components separately
+We can also pass `self` when we also need parent and child components separately inside the same curly braces
 
 ```rust
 // --snip--

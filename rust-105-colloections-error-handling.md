@@ -234,10 +234,17 @@ println!("{string_slice_valid}"); // will print "ক", it's a valid character in
 ```
 
 
+### HashMap and Hashing (Hashing Function) in general (HashTable DataStructure):
+In general CS term, `hashing` is a mathematical formula to generate a fixed-size output from an input of variable size. Different programming language implement this differently. 
+
+HashMap is the rust's implementation of general CS term `Hash-Table`, it has its own implementation of `hashing function` to generate unique fixed length identifier from the keys and storage mechanism as key-value pair.
+
 ### Hash Map (Key value pair, like map or dictionary or associative array):
 Using HashMap data is accessed using key instead of index. It's defined in the rust standard library.
 
 Hashmap is a key-value pair data structure (`HashMap<K, V>`) is common in other programming language, but they may  called different, ie, hash, map, object, hash table, dictionary, associative array, etc. 
+
+HashMap's key is unique, and can have only one value associated (vector, tuple or Option<T> with Some(T) or None will also work).
 
 
 * different ways to create hashmap with initial values
@@ -260,3 +267,102 @@ let values_vec = vec![10, 20, 30];
 
 let zipped_fruits_hashmap: HashMap<&str, i32> = keys_vec.into_iter().zip(values_vec).collect(); // type needs to be explicit
 ```
+
+* initializing HashMap with mutable option
+
+```rust
+let mut scores: HashMap<String, i32> = HashMap::new();
+scores.insert(String::from("Cricket"), 370);
+scores.insert(String::from("Football"), 4);
+// when accessed by key using the `get` function, it returns an Option<T> (either Some(T) or None), so we need to unwrap that
+println!("Scores for Cricket is {:?} and for Football is {:?}", scores.get(&String::from("Cricket")).expect("msg"), scores.get(&String::from("Football")).expect("nothing matches as the supplied key"));
+
+// iterating over a HashMap
+for (key, value) in scores {
+    println!("Key {key} and value {value}");
+}
+```
+
+### HashMap and Ownership (its the same principle):
+For types that implement the Copy trait, like i32, the values are copied into the hash map. For owned values like String, the values will be moved and the hash map will be the owner of those values
+
+```rust
+use std::collections::HashMap;
+
+let field_name = String::from("Favorite color");
+let field_value = String::from("Blue");
+
+let mut map = HashMap::new();
+map.insert(field_name, field_value);
+// field_name and field_value are invalid at this point, try using them and
+// see what compiler error you get!
+```
+
+### Updating Hashmap (overwriting, pre-existing case, old value calculation):
+Note: HashMap's key is unique, and can have only one value associated (vector, tuple or Option<T> with Some(T) or None will also work).
+
+Updating HashMap can go different direction
+- overwrite/replace the oldValue with newValue | `insert` with same key
+
+```rust
+users_balance.insert(userId, minimum_balance);
+users_balance.insert(userId, new_balance);
+```
+
+- keep the old value and discard the new value | `entry(Key).or_insert(Value)`
+
+```rust
+let user_handle = users_balance.entry(userId).or_insert(0);
+    if new_balance > minimum_balance {
+        *user_handle = new_balance;
+    }
+```
+
+- add the new value, if the key doesn't already have a value | `entry(Key).or_insert(Value)`
+
+```rust
+use std::collections::HashMap;
+
+let mut scores = HashMap::new();
+scores.insert(String::from("Blue"), 10);
+
+scores.entry(String::from("Yellow")).or_insert(50);
+scores.entry(String::from("Blue")).or_insert(50);
+
+println!("{scores:?}");
+```
+
+- combine the old value and new value | `entry(Key).or_insert(Value)`
+
+```rust
+let mut hashmap: HashMap<&str, i32> = HashMap::new();
+let text = "hello world wonderful world";
+
+for word in text.split_whitespace() {
+    let count = hashmap.entry(word).or_insert(0);
+    *count += 1;
+}
+
+println!("hashmap = {:?}", hashmap);
+```
+
+* Complete the challenges: https://doc.rust-lang.org/book/ch08-03-hash-maps.html#summary
+
+### Error Handling:
+Rust error are 2 type:
+- Recoverable Error (`Result<T,E>`): report error and retry, ie, file-not-found error
+- UnRecoverable Error (`Panic!` macro): immediately stop the program, ie, accessing a location beyond the end of an array. These are usually introduced by some bug.
+
+### UnRecoverable Error (`Panic!`):
+Rust has the `Panic!` macro to deal with unrecoverable errors. `Panic!` can be manually triggered or automatically when bugs are introduced (ie, accessing an array or vector element past the end).
+
+* By default, these panics will print a failure message, unwind, clean up the stack, and quit. Environment variables are also supported for stack trace and other features.
+
+* By default, when a panic occurs, the program starts unwinding, which means Rust walks back up the stack and cleans up the data from each function it encounters. Which is expensive computation. `panic = 'abort'` can set in `Cargo.toml` to immediately exit without the cleanup.
+
+```toml
+// Cargo.toml
+[profile.release]
+panic = 'abort'
+```
+
