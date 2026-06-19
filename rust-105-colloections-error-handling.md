@@ -366,3 +366,109 @@ Rust has the `Panic!` macro to deal with unrecoverable errors. `Panic!` can be m
 panic = 'abort'
 ```
 
+* now trigger a manual panic by calling the `panic!` macro with a message
+
+```rust
+// main.rs
+fn main() {
+    panic!("crash and burn");
+}
+
+// calling the `cargo run` will cause the program to panic with the provided message and some helpful information
+
+// `RUST_BACKTRACE=all cargo run` will give backtrace info about the error. `Backtrace` is a list of all the functions that have been called to get to this point (error), The key to reading the backtrace is to start from the top and read until you see files you wrote.
+```
+
+* `Backtrace` is a list of all the functions that have been called to get to this point (error), The key to reading the backtrace is to start from the top and read until you see files you wrote. That’s the spot where the problem originated. The lines above that spot are code that your code has called; the lines below are code that called your code. These before-and-after lines might include core Rust code, standard library code, or crates that you’re using
+
+* In order to get backtraces with this information, debug symbols must be enabled. Debug symbols are enabled by default when using cargo build or cargo run without the --release flag, as we have here.
+
+### `Result<T, E>` enum for recovering from errors:
+Result enum is defined as having two variants, `Ok` and `Err`
+
+```rust
+enum Result<T, E> {
+    Ok(T),
+    Err(E),
+}
+```
+
+* We can use match case to handle error cases gracefully or panic if nothing works
+
+
+```rust
+use std::{
+    fs::File,
+    io::{Error, ErrorKind},
+};
+
+pub fn recover_error_one() {
+    println!("Bismillah");
+    get_file_and_report();
+    get_file_and_report_with_generics();
+}
+
+// Error (`Result<T, E>`) handling with nested match 
+fn get_file_and_report() {
+    let greeting_file_result = File::open("hello.txt");
+
+    // handling Result's cases for accessing the hello.txt file, whether is exists or not
+    let greeting_file = match greeting_file_result {
+        Ok(File) => File,
+        // Err(Error) => panic!("File not found: {Error_Msg}"), // instead of panicking here, let's create the file if not exists already
+        Err(Error) => match Error.kind() {
+            ErrorKind::NotFound => match File::create("hello.txt") {
+                Ok(File) => File,
+                Err(Create_Failed) => panic!("File cannot be created: {Create_Failed:?}"),
+            },
+            _ => panic!("File not found: {Error:?}"),
+        },
+    };
+
+    println!("{greeting_file:?}");
+}
+
+
+// Result<T, E> handling with closure function defined inside of the Result
+fn get_file_and_report_with_generics() {
+    let file_name = "Hello2.txt";
+    let greeting_file_result = File::open(file_name);
+
+    // handle Result's case with closure (unwrap_or_else) instead of multiple nested match statement 
+    let greeting_file = greeting_file_result.unwrap_or_else( |error| {
+        if error.kind() == ErrorKind::NotFound {
+            File::create(file_name).unwrap_or_else(|err| {
+                panic!("Problem creating the file {err:?}");
+            })
+        } else {
+            panic!("Problem opening the file {error:?}");
+        }
+    });
+
+    println!("{greeting_file:?}");
+}
+
+
+// Result<T, E> handling with unwrap method 
+// If the Result value is the Ok variant, unwrap will return the value inside the Ok. If the Result is the Err variant, unwrap will call the panic! macro for us. 
+// unwrap cannot have custom panic message
+fn get_file_and_report_with_unwrap() {
+    let file_name = "Hello3.txt";
+    let greeting_file_result = File::open(file_name);
+
+    let greeting_file = greeting_file_result.unwrap();
+}
+
+// Result<T, E> handling with `expect`
+// In production-quality code, most Rustaceans choose expect rather than unwrap. As unwrap doesn't have custom message
+fn get_file_and_report_with_expect() {
+    let file_name = "Hello4.txt";
+    let greeting_file_result = File::open(file_name);
+
+    let greeting_file_name = greeting_file_result.expect("The specified file {file_name} doesn't exists");
+}
+```
+
+### Error Propagation (Returning error to the caller function):
+When a function’s implementation calls something that might fail, instead of handling the error within the function itself, you can return the error to the calling code so that it can decide what to do. This is known as propagating the error and gives more control to the calling code, 
+
