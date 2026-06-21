@@ -19,8 +19,8 @@ fn get_file_and_report() {
         // Err(Error) => panic!("File not found: {Error_Msg}"), // instead of panicking here, let's create the file if not exists already
         Err(Error) => match Error.kind() {
             ErrorKind::NotFound => match File::create("hello.txt") {
-                Ok(File) => File,
-                Err(Create_Failed) => panic!("File cannot be created: {Create_Failed:?}"),
+                Ok(file) => file,
+                Err(creation_failed) => panic!("File cannot be created: {creation_failed:?}"),
             },
             _ => panic!("File not found: {Error:?}"),
         },

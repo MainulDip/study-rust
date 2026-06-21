@@ -469,6 +469,196 @@ fn get_file_and_report_with_expect() {
 }
 ```
 
+### Option<T> vs Result<T, E>:
+Option enum constrains `Some(T)` and `None`. Result Contains `Ok(T)` and `Err(E)`
+```rust
+// Option<T>
+enum Option<T> {
+    None,
+    Some(T),
+}
+
+// Result<T, E>
+enum Result<T, E> {
+    Ok(T),
+    Err(E),
+}
+```
+
+
+### `match` arm with and without `return`:
+When match is used as expression (store the match's evaluation into a variable) omitting return passes the evaluated value to the caller variable, while using the `return` will trigger exits the entire surrounding function immediately
+
+```rust
+// to pass a match evaluation value to its caller variable, don't use and `return`
+fn get_discount(is_member: bool) -> u32 {
+    // The match yields a value to the variable `discount`
+    let discount = match is_member {
+        true => 20,  // No "return", no semicolon
+        false => 0,  // Evaluates to u32
+    };
+    
+    println!("Processing discount...");
+    discount // Returns out of the function implicitly
+}
+
+
+
+// to do `early exit` and pass the match evaluation value to directly to the surrounding caller function, use the `return` statement
+
+fn divide(numerator: f64, denominator: f64) -> Option<f64> {
+    match denominator == 0.0 {
+        true => {
+            // Exits the whole function immediately
+            return None; 
+        }
+        false => {
+            // Evaluates locally; match block yields an Option
+            Some(numerator / denominator) 
+        }
+    }
+}
+```
+
 ### Error Propagation (Returning error to the caller function):
 When a function’s implementation calls something that might fail, instead of handling the error within the function itself, you can return the error to the calling code so that it can decide what to do. This is known as propagating the error and gives more control to the calling code, 
 
+```rust
+// the function read_username_from_file will open the specified filename and return a Result type with either String or Error
+// in this code, we are fetching a file, storing it's content inside of a variable, and if something goes wrong, will propagate the error to its caller function
+
+use std::{fs::File, io::{self, Read}};
+
+pub fn propagating_error_fn() {
+    println!("Propagating Errors To Its Caller Function");
+    match read_username_from_file("Hello7") {
+        Ok(content) => println!("User Name = {content}"),
+        Err(e) => match e.kind() {
+            // we're gracefully handling error by only printing a message (by not causing panic)
+            _ => println!("Something went wrong {e:?}")
+        },
+    }
+}
+
+
+// this function will propagate Ok(String) or Error(Message) to its caller, so we need to handle possible error from there
+fn read_username_from_file(file_name: &str) -> Result<String, io::Error> {
+    let the_file = File::open(file_name);
+
+    let mut username_containing_file = match the_file {
+        Ok(file) => file,
+        Err(e_message) => return Err(e_message),
+        // Err(e_message) => Err(e_message), // will not work here, either panic! or returning the Error (as the enclosing function accept either a String or an Error)
+        // the calling the panic! macro will not return the error to the caller function, rather will cause panic here. loosing the ability to handle error later 
+        // the return statement used here will cause an early exit, propagating the Error as the return of this function
+    };
+
+    let mut user_name = String::new();
+
+    // read the User Name from the file and store in the variable
+    let final_result = match username_containing_file.read_to_string(&mut user_name) {
+        Ok(_) => Ok(user_name),
+        Err(e) => Err(e),
+    };
+
+    // Ok(String::new())
+    final_result
+
+    // when match is used as statement (not storing the evaluation in a variable), all of it's arm `return` automatically, no need to explicitly write the return/
+    // so we can also return either `Ok(String)` or `Err(Message)` directly
+    // match username_containing_file.read_to_string(&mut user_name) {
+    //     Ok(_) => Ok(user_name),
+    //     Err(e) => Err(e),
+    // }
+}
+```
+
+### `?` operator as `match Result<T, E>` or `Option<T>` shortcut: 
+By using `?` after a `Result<T, E>` can be handle like a `match` statement. If the value of the Result is an Ok, the value inside the Ok will get returned from this expression, and the program will continue. If the value is an Err, the Err will be returned from the whole function as if we had used the return keyword so that the error value gets propagated to the calling code.
+
+```rust
+// using the `?` operator after Result<T, E> instead of match express. Works same, but minimize lots of boilerplate code
+fn read_username_from_file_using_question_operator (file_name: &str) -> Result<String, io::Error> {
+    let mut the_file = File::open(file_name)?;
+    let mut user_name = String::new();
+    the_file.read_to_string(&mut user_name)?;
+    // we can minimize the code even further by chaining
+    // File::open("hello.txt")?.read_to_string(&mut username)?;
+    Ok(user_name)
+}
+```
+
+* The above function more shorter by using `fs::read_to_string` function. As reading from a file is common, the starred library provide this function as convenience.
+
+```rust
+use std::fs;
+use std::io;
+
+fn read_username_from_file() -> Result<String, io::Error> {
+    fs::read_to_string("hello.txt")
+}
+```
+
+* Note: We cannot use `?` inside a function that's return type is not either `Result<T, E>` or `Option<T>`.
+
+```rust
+/**
+* This function returns Option<char>, so it can return either `Some<char>` or None
+* the `lines()` method returns an iterator over the lines of the string
+* the `next()?` call return the fist line if the text is not empty, or returns None otherwise
+*/
+fn last_char_of_first_line(text: &str) -> Option<char> {
+    text.lines().next()?.chars().last()
+}
+```
+
+### Custom error type with `?` operator:
+* Note: There's a difference between using match vs `?` on `Result<T, E>`. Error values that have the ? operator called on them go through the `from` function, defined in the `From` trait in the standard library, which is used to convert values from one type into another. When the `?` operator calls the `from` function, the error type received is converted into the error type defined in the return type of the current function. This is useful when a function returns one error type to represent all the ways a function might fail, even if parts might fail for many different reasons.
+
+For example, we could change the read_username_from_file function in to return a custom error type named OurError that we define. If we also define `impl From<io::Error>` for OurError to construct an instance of OurError from an io::Error, then the ? operator calls in the body of read_username_from_file will call from and convert the error types without needing to add any more code to the function.
+
+
+### using `?` operator in the `main` function:
+The main function in rust can return either `()` or a `Result<(), E>` in rust.
+
+```rust
+use std::error::Error;
+use std::fs::File;
+
+fn main() -> Result<(), Box<dyn Error>> {
+    let greeting_file = File::open("hello.txt")?;
+    Ok(())
+}
+```
+
+* in the code above, `Box<dyn Error>` is a trait object type. It will accept any Error value
+
+* main function return code with Result type (0 for success and non-zero for error) : When a main function returns a Result<(), E>, the executable will exit with a value of 0 if main returns Ok(()) and will exit with a nonzero value if main returns an Err value. Executables written in C return integers when they exit: Programs that exit successfully return the integer 0, and programs that error return some integer other than 0. Rust also returns integers from executables to be compatible with this convention.
+
+* The `main` function may return any types that implement the `std::process::Termination` trait, which contains a function report that returns an ExitCode. 
+
+
+### Custom type (struct) implementation for in-built validation:
+Its the improvement of the guessing game form the first chapter. We will build a new type from user input (i32), but only accepting numbers between 1 to 100. Any number smaller or greater than this will trigger panic!.
+
+```rust
+pub struct Guess {
+    value: i32, // recall: all members are private by default, unless marked with `pub`
+}
+
+impl Guess {
+    // recall: this is an associated function (not exception any self, and will be called using `Guess::new(i32)`) to create a new instance of this type
+    pub fn new(value: i3) -> Guess {
+        if value < 1 || value > 100 {
+            panic!("");
+        }
+        // after the if block validation, we will construct the object
+        Guess { value }
+    }
+
+    // custom getter, as our member is private
+    pub fn value(&self) -> {
+        self.value
+    }
+}
+```
