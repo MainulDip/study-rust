@@ -1,5 +1,5 @@
-pub fn generics_introduction() {
-    println!("Introducing Generics 101");
+pub fn generic_function_introduction() {
+    println!("\n\n--------------Introducing Generics Functions 101--------------\n\n");
 
     let number_list_array = [1, 2, 3];
     let largest_number_from_array = largest_i32(&number_list_array);
