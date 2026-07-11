@@ -177,3 +177,4 @@ fn main() {
 }
 ```
 
+### Traits (interface with some differences):
