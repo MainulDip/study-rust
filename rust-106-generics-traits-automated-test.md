@@ -178,3 +178,22 @@ fn main() {
 ```
 
 ### Traits (interface with some differences):
+A trait defines the functionality a particular type has and can share with other types. We can use traits to define shared behavior in an abstract way. We can use trait bounds to specify that a generic type can be any type that has certain behavior.
+
+* A trait can have multiple methods in its body: The method signatures are listed one per line, and each line ends in a semicolon.
+
+* Traits can have both abstract and non-abstract (default) methods
+
+```rust
+// Defining the Summary trait with an abstract method
+pub trait Summary {
+    fn summarize(&self) -> String;
+}
+
+pub struct NewsArticles {
+    pub headline: String,
+    pub location: String,
+    pub author: String, 
+    pub content: String,    
+}
+```
