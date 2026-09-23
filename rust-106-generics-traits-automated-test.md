@@ -196,4 +196,81 @@ pub struct NewsArticles {
     pub author: String, 
     pub content: String,    
 }
+
+impl Summary for NewsArticle {
+    fn summarize(&self) -> String {
+        format!("{}, by {} ({})". self.headline, self.author, self.location)
+    }
+}
+
+pub struct SocialPost {
+    pub username: String,
+    pub content: String,
+    pub reply: bool,
+    pub repost: bool,
+}
+
+impl Summary for SocialPost {
+    fn summarize(&self) -> String {
+        format!("{}: {}". self.username, self.content)
+    }
+}
 ```
+
+* Trait's implementation Restriction (on Local and External crate):
+If both crate and trait are external (ie, std lib or prelude), external trait cannot be implemented on external types (types defined on external crates). 
+
+But If both or either one is local, it will work, ie,
+- both trait and crate's type is local
+- local (on local crate) defied trait and external type (on external crate's type) or vise-versa 
+
+### Trait with default implementation and mixed (default + abstract):
+Traits can have abstract and default methods. Default implementations can call other methods in the same trait, even if those other methods don’t have a default implementation.
+
+In this way, a trait can provide a lot of useful functionality and only require implementors to specify a small part of it. 
+
+```rust
+pub trait Summary {
+    fn summarize(&self) -> String {
+        String::from("(Read more ...)")
+    }
+}
+
+impl Summary for NewsArticle {} // empty impl block is all it needs
+```
+
+* traits with both abstract and default implementation
+
+```rust
+pub trait Summary {
+    fn summarize_author(&self) -> String;
+
+    // default implementation can call no-default (abstract) methods
+    fn summarize(&self) -> String {
+        format!("(Read more from {}...)", self.summarize_author())
+    }
+}
+
+// and it's obligatory for non default function to provide the implementing
+
+impl Summary for SocialPost {
+    fn summarize_author(&self) -> String {
+        format!("@{}", self.username)
+    }
+}
+```
+
+### Traits as parameter and Bound syntax:
+With the `impl` keyword and the trait name in functions parameter, we will accept types that implements that trait.
+
+```rust
+pub fn notify(item: &impl Summary) {
+    println!("Breaking news! {}", item.summarize());
+}
+```
+
+Here the `&impl Trait_Name` in the parameter is a shorter syntax of the full verbose version of trait bound `fn_name<T: Summary>(item: &T)`
+
+
+
+### Trait's bound:
