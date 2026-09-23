@@ -18,7 +18,7 @@ struct NewsArticle {
 
 impl Summary for NewsArticle {
     fn summarize(&self) -> String {
-        format!("{}, by {} ({})", self.headline, self.author, self.location)
+        return format!("{}, by {} ({})", self.headline, self.author, self.location);
     }
 }
 
@@ -31,6 +31,6 @@ struct SocialPost {
 
 impl Summary for SocialPost {
     fn summarize(&self) -> String {
-        format!("{}: {}", self.username, self.content)
+        return format!("{}: {}", self.username, self.content);
     }
 }
