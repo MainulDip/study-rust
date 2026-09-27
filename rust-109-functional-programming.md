@@ -1,0 +1,574 @@
+### Functional programming in rust and Closures, Iterators:
+Programming in a functional style often includes using functions as values by passing them in arguments, returning them from other functions, assigning them to variables for later execution, and so forth.
+
+`Closures`: anonymous functions, can be saved in a variable or pass as other functions arguments.
+
+```rust
+fn  add_one_v1   (x: u32) -> u32 { x + 1 } // function definition
+let add_one_v2 = |x: u32| -> u32 { x + 1 }; // closure definition with optional type and return type
+let add_one_v3 = |x|             { x + 1 }; // ,, without param & return type
+let add_one_v4 = |x|               x + 1  ; // ,, without braces, and without param and return types
+
+
+// compiler automatic type inference strategy for closure function
+// - like any other variable type inference, closure's param and return types are inferred by compiler by first use/call
+
+let example_closure = |x| x; // defining closure without any type information
+
+let s = example_closure(String::from("hello")); // first-time calling with String type for both parameter and return will instruct compiler to set the type as `String`
+let n = example_closure(5); // won't work, as the closure type is already set as `String`, the compiler will not accept `i32` as any of the closure type
+```
+
+
+### Closure's environment capturing (accessing variable from outer scope) vs Regular Fn:
+A regular function is rust cannot access variable defined in outer scope, only parameter and local variable created inside of that function are accessible.
+
+Ie, an inner function nested inside another function cannot read the outer function's local variable. 
+
+But a closure can access out-of-scope defined variable.
+
+```rust
+fn main() {
+    let outer_var = 47;
+
+    // This works! The closure can access outer scope variable (capturing dynamic environment)
+    let my_closure = || {
+        println!("{}", outer_var); // closure will borrow the outer scope variable automatically 
+    };
+
+    my_closure();
+
+    // This will cause a compilation error! while using regular function
+    fn my_function() {
+        println!("{}", outer_var); // Error: can't capture dynamic environment
+    }
+}
+```
+
+### Closure's capturing reference or moving ownership:
+A closure can capture values from their environment (out-of-scope variable access) in three ways, like the 3 ways a function can take a parameter
+- borrowing immutably: will borrow any out-of-scope variable automatically if not mutating the variable.
+- borrowing mutably: if the closure is mutating the variable, the variable will follow rules for mutating. The old variable cannot be read until the closure had been called.
+- moving/taking ownership: Closure doesn't move ownership unless specified the `move` keyword before the double pipe `||`, as `move || println!("moving ownership of the out-of-scope-variable")`
+
+```rust
+// immutable borrowing example ---------------------------------
+fn main() {
+    let list = vec![1, 2, 3];
+    println!("Before defining closure: {list:?}");
+
+    let only_borrows = || println!("From closure: {list:?}");
+
+    println!("Before calling closure: {list:?}");
+    only_borrows();
+    println!("After calling closure: {list:?}");
+}
+
+// mutable borrowing example -------------------------------------
+fn main() {
+    let mut list = vec![1, 2, 3];
+    println!("Before defining closure: {list:?}");
+
+    let mut borrows_mutably = || list.push(7);
+    // println!("{list:?}"); // won't work here until the closure is called (and will be released afterwards), as mutable borrowing rule apply
+    borrows_mutably();
+    println!("After calling closure: {list:?}");
+}
+
+// moving ownership example -------------------------------------
+// use `move` keyword specifically to move the out-of-scope variable ownership
+use std::thread;
+
+fn main() {
+    let list = vec![1, 2, 3];
+    println!("Before defining closure: {list:?}");
+
+    thread::spawn(move || println!("From thread: {list:?}"))
+        .join()
+        .unwrap();
+}
+```
+
+
+### Closure types by captured value management and trait bounds (Closure traits):
+A closure body can do any of the following
+- Move a captured value out of the closure | bounds to `FnOnce` trait
+- Mutate the captured value (but not moving ownership) | bounds to `FnMut` trait
+- Neither move or mutate the value | bounds to `Fn` trait
+- Capture nothing from the environment (variable defined outside) to begin with | bound to `Fn` trait
+
+A closure's capturing & handling of environment values depends on the three kinds of underlying trait implementation.
+
+
+- `FnOnce` applies to closures that can be called once. All closures implement at least this trait because all closures can be called. A closure that moves captured values out of its body will only implement FnOnce and none of the other Fn traits because it can only be called once.
+
+- `FnMut` applies to closures that don’t move captured values out of their body but might mutate the captured values. These closures can be called more than once.
+
+- `Fn` applies to closures that don’t move captured values out of their body and don’t mutate captured values, as well as closures that capture nothing from their environment. These closures can be called more than once without mutating their environment, which is important in cases such as calling a closure multiple times concurrently.
+
+
+```rust
+// signature of `unwrap_or_else` from the std library
+impl<T> Option<T> {
+    pub fn unwrap_or_else<F>(self, f: F) -> T 
+    where
+        F: FnOnce() -> T
+    {
+        match self {
+            Some(x) => x,
+            None = f(),
+        }
+    }
+}
+
+// unwrap_or_else function returns a generic type T, either `Some(x) => x` or `None => f()` defined in match statement inside of the body
+// As the trait bound in `where` clause `F: FnOnce() -> T`, `FnOnce()` trait impose that the generic type `F` must not be called more than once, inside of the unwrap_or_else function
+// Because, unwrap_or_else implements the base `FnOnce()` trait, all closure types (+ FnMut, Fn) are supported here 
+```
+
+
+### The closure trait Hierarchy:
+In Rust, closure traits are arranged in a strict hierarchy where each trait builds on top of the other. 
+
+The base trait is `FnOnce()`
+- `FnMut` extends the `FnOnce()`
+- `Fn` extends the `FnMute`
+
+For this reason when the bound is set to `FnOnce()`, it will work with all `FnOnce`, `FnMut` and `Fn` trait. But if the bound is set to `Fn` trait only, it will only accept `Fn` implemented closures.
+
+
+```rust
+pub trait FnOnce<Args> {
+    type Output;
+
+    extern "rust-call" fn call_once(self, args: Args) -> Self::Output;
+}
+
+pub trait FnMut<Args>: FnOnce<Args> {
+    extern "rust-call" fn call_mut(&mut self, args: Args) -> Self::Output;
+}
+
+pub trait Fn<Args>: FnMut<Args> {
+    extern "rust-call" fn call(&self, args: Args) -> Self::Output;
+}
+
+/*
+* extern "rust-call" is a special internal calling convention (ABI) in Rust used by the compiler to implement the core function-calling traits like Fn, FnMut, and FnOnce. It tells the compiler to treat the arguments of a tuple as individual, flattened arguments at the machine code level rather than as a single packaged tuple structure
+
+* See the ABI section (included here) for mini ABI guides
+*/
+```
+
+### The `()` syntax as both unit type (empty tuple) and no-arg closure type:
+In Rust, `()` plays two completely different roles depending on where it's been used.
+it is fundamentally an empty tuple syntax, but it is also used as a type or value to represent zero arguments in function signatures. 
+
+When `()` used inside the angle brackets `<()>` of a closure trait, the special syntactic sugar is just `()`, which accept not arguments. To support multiple arguments, we can use `FnOnce(i32, i32)` kind of syntax.
+
+```rust
+// closure type implementing `FnOnce(i32, i32)`, multiple arguments
+fn consume_and_add<F>(closure: F) 
+where
+    F: FnOnce(i32, i32) -> i32 // Trait bound expecting two i32 arguments
+{
+    // Call the closure exactly once with two arguments
+    let result = closure(10, 20); 
+    println!("The result is: {}", result);
+}
+
+fn main() {
+    // This heavy object will be consumed by the closure
+    let unique_resource = String::from("Config data");
+
+    // The closure takes two arguments: x and y
+    let my_closure = move |x: i32, y: i32| -> i32 {
+        // Accessing unique_resource moves it into the closure,
+        // and because it drops here, this closure can only run once.
+        println!("Using resource: {}", unique_resource); 
+        
+        x + y
+    };
+
+    // Pass the closure to the function
+    consume_and_add(my_closure);
+    
+    // my_closure cannot be used again here because it was consumed
+}
+
+// The simplified internal definition in the standard library
+pub trait FnOnce<Args> {
+    type Output;
+    fn call_once(self, args: Args) -> Self::Output;
+}
+
+```
+
+### `FnMut` for calling multiple times by reference (sort_by_key fn case):
+The function  `sort_by_key` is defined to take an FnMut closure, it can call the closure multiple times, once for each item using a loop. The closure |r| r.width doesn’t capture, mutate, or move anything out from its environment, so it meets the trait bound requirements of `FnMut`
+
+```rust
+#[derive(Debug)]
+struct Rectangle {
+    width: u32,
+    height: u32,
+}
+
+fn main() {
+    let mut list = [
+        Rectangle { width: 10, height: 1 },
+        Rectangle { width: 3, height: 5 },
+        Rectangle { width: 7, height: 12 },
+    ];
+
+    let mut sort_operations = vec![];
+    let value = String::from("closure called");
+
+    list.sort_by_key(|r| {
+        // sort_operations.push(value); // compile error, as the ownership of `value` changed, and we're calling that multiple time, after the first iteration, the variable `value` will be non-existence. All because the `FnMut` trait implemented by the `sort_by_key` 's accepted closure does not support moving ownership as this can be called multiple times (opposite of FnOnce)
+        r.width
+    });
+    println!("{list:#?}");
+
+
+    // But, the code below is valid, as it doesn't move the ownership for the `num_sort_operations` variable, it will use the reference
+    let mut num_sort_operations = 0;
+    list.sort_by_key(|r| {
+        num_sort_operations += 1;
+        r.width
+    });
+    println!("{list:#?}, sorted in {num_sort_operations} operations");
+}
+```
+
+### Iterators:
+Iterators are used to perform some task on a sequence of items (collection to be precise, ie, vector, list, etc) in turn. Because they are `lazy` initialized, unless methods that consume that, there is no effect, so method like `next`, `collect` or manual loop needs to be called.
+
+```rust
+let v1 = vec![1, 2, 3];
+
+let v1_iter = v1.iter(); // converting vector v1 into Iterator
+
+// looping over the iterator v1_iter, 
+// though, for-in loop convert the collection into an Iterator if not converted already
+for val in v1_iter {
+    println!("Got: {val}");
+}
+```
+
+Iterators are consumed, and it keeps track of all the consumed item/s from a collection.
+
+```rust
+#[test]
+fn iterator_demonstration() {
+    let v1 = vec![1, 2, 3];
+
+    let mut v1_iter = v1.iter(); // converting a vector into an Iterator, which make `next()` method available 
+
+    assert_eq!(v1_iter.next(), Some(&1));
+    assert_eq!(v1_iter.next(), Some(&2));
+    assert_eq!(v1_iter.next(), Some(&3));
+    assert_eq!(v1_iter.next(), None);
+}
+```
+
+### Iterator trait & the `next` method:
+All iterators implement a trait named Iterator that is defined in the standard library. 
+
+```rust
+pub trait Iterator {
+    type Item; // associated type
+
+    fn next(&mut self) -> Option<Self::Item>;
+
+    // methods with default implementations elided
+}
+
+// note : type Item and Self::Item, which are defining an associated type with this trait.
+// this associated type says implementing the Iterator trait requires that Item type must be defined
+```
+
+* When we loop over some collection using `for in`, behind the scene the collection is converted into an iterator using the `IntoIterator` trait, and use `next()` while looping.
+
+* Looping tips using `for in` to be more precise with ownership
+    - `for item in collection` — Loops by consuming the collection (takes ownership, so you cannot use the collection afterward).
+    - `for item in &collection` — Loops by borrowing the items (leaves the original collection untouched).
+    - `for item in &mut collection` — Loops by mutably borrowing the items (allows you to modify the data in place).
+
+
+### Methods consuming Iterators:
+Methods that call `next` are called consuming adapter, as calling them uses up the iterator. Like the `sum` method, which takes ownership of the iterator and iterates through the items by repeatedly calling next, thus consuming the iterator. As it iterates through, it adds each item to a running total and returns the total when iteration is complete.
+
+
+
+```rust
+#[test]
+fn iterator_sum() {
+    let v1 = vec![1, 2, 3];
+
+    let v1_iter = v1.iter();
+
+    let total: i32 = v1_iter.sum();
+
+    assert_eq!(total, 6);
+    // println!("{v1_iter}"); // compile error, v1_iter is no longer available as using sum had moved the ownership
+}
+```
+
+### Methods producing Iterator (aka, Iterator adapters):
+Iterator adapters are methods defined on the Iterator trait that don’t consume the iterator. Instead, they produce different iterators by changing some aspect of the original iterator.
+
+Like, the iterator adapter method `map`, which takes a closure to call on each item as the items are iterated through. The map method returns a new iterator that produces the modified items. The closure here creates a new iterator in which each item from the vector will be incremented by 1.
+
+
+* Note: Iterator adapters are chainable to do complex action. But, as iterators are lazy, consuming adapter methods are required to be called to get results.
+
+
+```rust
+let v1: Vec<i32> = vec![1, 2, 3];
+
+v1.iter().map(|x| x + 1); // this doesn't do anything, as we're not using/calling the lazy iterator adapter
+
+let v2: Vec<_> = v1.iter().map(|x| x + 1).collect();
+// the collect() method used here, will consumes the iterator and collects the resultant values into a collection data type `v2`
+
+ assert_eq!(v2, vec![2, 3, 4]);
+```
+
+### Usages of Iterator adapter `filter` method:
+the filter method that takes a closure. The closure gets an item from the iterator and returns a bool. If the closure returns true, the value will be included in the iteration produced by filter. If the closure returns false, the value won’t be included.
+
+```rust
+// the example below, we're using filter with a closure that captures the shoe_size variable from its environment to iterate over a collection of Shoe struct instances. It will return only shoes that are the specified size.
+
+#[derive(PartialEq, Debug)]
+struct Shoe {
+    size: u32,
+    style: String,
+}
+
+fn shoes_in_size(shoes: Vec<Shoe>, shoe_size: u32) -> Vec<Shoe> {
+    shoes.into_iter().filter(|s| s.size == shoe_size).collect()
+    // the filter method consuming variable from its environment (function's parameter) through its closure
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn filters_by_size() {
+        let shoes = vec![
+            Shoe {
+                size: 10,
+                style: String::from("sneaker"),
+            },
+            Shoe {
+                size: 13,
+                style: String::from("sandal"),
+            },
+            Shoe {
+                size: 10,
+                style: String::from("boot"),
+            },
+        ];
+
+        let in_my_size = shoes_in_size(shoes, 10);
+
+        assert_eq!(
+            in_my_size,
+            vec![
+                Shoe {
+                    size: 10,
+                    style: String::from("sneaker")
+                },
+                Shoe {
+                    size: 10,
+                    style: String::from("boot")
+                },
+            ]
+        );
+    }
+}
+```
+
+### Frequently used Iterator Methods (Both consuming and producing):
+Rust has dozens of methods in the standard library's Iterator trait. They split into core required methods, adapters that change or filter data, and consumers that finish the loop and return a result.
+
+---------------------------------------------------
+* Converting Collection to Iterator:
+- `iter(&self)`: Creates iterator by borrowing item, short-hand `(&collection).into_iter()`
+- `iter_mut(&mut self)` : creates by borrowing mutably, short-hand `(&mut collection).into_iter()`
+- `into_iter(self)` : Consumes the collection and takes full ownership
+
+
+--------------------------------------------------
+* Splitting Collection to Iterator:
+- chunks(size) / chunks_mut(size) — Splits a slice or Vec into an iterator of non-overlapping chunks of a given size.
+- windows(size) — Returns an iterator over all contiguous windows of a given size (overlapping sub-slices).
+- split(pred) / split_mut(pred) — Returns an iterator over elements separated by a matching condition.
+- drain(range) — Removes a specified range of elements from a vector or map and returns them as an owning iterator, keeping the rest of the collection intact.
+
+----------------------------------------------------
+* Core Method
+- next - Returns the next Item
+
+------------------------------------------------------------------
+* Iterator Adapters (Produce a new Iterator)
+
+- map — Changes each item.
+- filter — Keeps items matching a test.
+- filter_map — Filters and maps at the same time.
+- flat_map — Maps and flattens nested lists.
+- flatten — Flattens nested iterators.
+- enumerate — Adds an index counter.
+- zip — Pairs items with another iterator.
+- chain — Joins two iterators end-to-end.
+- take — Keeps only the first n items.
+- take_while — Keeps items while a test is true.
+- skip — Skips the first n items.
+- skip_while — Skips items while a test is true.
+- step_by — Yields every nth item.
+- inspect — Lets you look at an item without changing it.
+- peekable — Allows looking at the next item early.
+- fuse — Keeps returning none after ending.
+- rev — Reverses the iterator.
+- cycle — Repeats the iterator forever.
+
+
+---------------------------------------------------------------
+* Consumers (Run the Iterator and return a value)
+
+- collect : Turns items into a collection like a vector.
+- count : Counts how many items are left.last — Gets the final item.
+- fold — Accumulates a single value from left to right.
+- reduce — Accumulates items using a function.
+- for_each — Runs code on every item.
+- all — Checks if all items pass a test.
+- any — Checks if any item passes a test.
+- find — Locates the first item matching a test.
+- find_map — Locates and maps the first match.
+- position — Finds the index of a matching item.
+- nth — Gets the nth item.
+- sum — Adds all numbers up.
+- product — Multiplies all numbers up.
+- max — Finds the largest item.
+- min — Finds the smallest item.
+- cmp / partial_cmp — Compares iterators.
+
+### Improving I/O minigrep with closures:
+Instead of sending a string slice, we can send the owned Iterator directly using `std::env::args()` and change the `Config::build` signature to accept that
+
+```rust
+fn main() {
+    let config = Config::build(env::args()).unwrap_or_else(|err| {
+        eprintln!("Problem parsing arguments: {err}");
+        process::exit(1);
+    });
+
+    // --snip--
+}
+
+impl Config {
+    fn build(
+        mut args: impl Iterator<Item = String>,
+    ) -> Result<Config, &'static str> {
+        args.next(); // first arg will be the program name, hence we're just consuming that by calling, so on next call, we'll get the actual argument
+
+        let query = match args.next() {
+            Some(arg) => arg,
+            None => return Err("Didn't get a query string"),
+        };
+
+        let file_path = match args.next() {
+            Some(arg) => arg,
+            None => return Err("Didn't get a file path"),
+        };
+
+        // --snip--
+    }
+}
+```
+
+
+Changing the searching functionality using Iterator and Closure
+
+```rust
+// cargo run bog poem.txt
+pub fn search<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
+    contents.lines()
+    .filter(|line| line.contains(query))
+    .collect()
+}
+
+// IGNORE_CASE="" cargo run BOG poem.txt
+pub fn search_case_insensitive<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
+    contents.lines()
+    .filter(|line| line.contains(query))
+    .collect()
+}
+```
+
+### Loop vs Iterator's Adapter methods and Readability:
+Iterator's adapter and manual loop are nearly same performance (loop has the edge)
+And Iterator's method chaining is more readable than looping
+
+```txt
+test bench_search_for  ... bench:  19,620,300 ns/iter (+/- 915,700)
+test bench_search_iter ... bench:  19,234,900 ns/iter (+/- 657,200)
+```
+
+### ABI and Interaction with the OS:
+Rust supports a wide variety of calling conventions (ABIs) to interact with the underlying operating system, compile assembly, and link with foreign programming languages like C, C++, and WebAssembly.
+
+
+ABI: Stands for Application binary interface, For communicating with another program and/or library file or the operating system (installing app, networking, etc), ABI dictates exactly how data structures are laid out in memory, how functions pass arguments to CPU registers, and how the program makes system calls to the operating system kernel.
+
+
+* Usages of ABI
+    - ABIs are not used for everything. Most of the time a program communicates with itself, the compiler laid out most of the instruction set, so all of its variables, loops and internal functions can be calculated using the compiler provided blueprint.
+    - Storing local variables, running runtime loops, and calling internal functions do not use an ABI. When code runs entirely inside itself, the compiler has absolute freedom to arrange memory, manage loops, and handle variables however it wants.
+    - ABIs are only used when the program need to cross its internal boundary, like communicating with the OS (not cpu), write/read a file, print text to screen, spawning a new thread, etc. 
+    - ABIs are used to talk to shared `.dll` (windows) or `.so` (linux) files compiled by other program
+    - ABIs are used when code written in C++/rust/swift needs to call a function written in other programming languages. Usually they must agree on a shared `C ABI` to understand each other's binary data layout
+    - ABIs are used as a program cannot talk directly to computer's screen, hard drive, or Wi-Fi card. It must ask the Operating System (OS) kernel to do it via a System Call.
+    - ABIs are used When Operating System Linkers and Loaders Launch Your Program (executables). The OS uses the Executable Format ABI (like ELF on Linux, PE on Windows, or Mach-O on macOS) to understand how the binary data is structured on disk, where to map it into RAM, and where the CPU should look to find the entry point (the main function).
+
+
+    * ABI vs API Use cases
+        - In standard software engineering, two separate program will communicate through exposed APIs contract. Only relying on ABIs are incredibly fragile.
+        - If program A communicate with program B purely by guessing its memory offsets and CPU register usage (ABI-only), the slightest change will break it. If Program B is recompiled using a newer version of the compiler, the compiler might decide to optimize the code and move a variable from Register RDI to Register RSI.
+        - ABI's are used When a security researcher or reverse engineer modifies a compiled binary program (like a video game or a closed-source application), they do not have access to the source code or the developer's API. They use a debugger to analyze the compiled binary file. They find the exact memory address where a function starts and look at how the CPU handles it. They write a separate binary injector. This injector directly targets the ABI rules of the target program. It forces the CPU to place a value into Register RAX and hijacks the execution pointer.
+
+
+The list of supported ABIs is divided into stable options you can use today, platform-specific options for hardware architectures, and internal unstable options.
+
+- Stable ABIs (Cross-Platform)
+    These are the most common ABIs used for standard foreign function interfaces (FFI) and cross-language communication.
+
+    - "Rust": The default ABI used for standard Rust functions. It is unstable, meaning its exact layout can change between compiler versions.
+    
+    - "C" (or "extern" without a string): Matches the standard C ABI of the target platform. It is the default choice for interoperability with almost all other languages.
+    
+    - "system": A helper that automatically resolves to the standard system ABI. On most platforms, this is identical to "C", but on 32-bit Windows, it maps to "stdcall"
+
+
+- Platform-Specific ABIsThese ABIs
+    Target specific operating systems or processor architectures, often used in embedded development, low-level OS kernels, or legacy systems.
+    - "stdcall": Used primarily for the Win32 API on 32-bit Windows.
+    - "fastcall": Passes as many arguments as possible in CPU registers rather than the stack (common in 32-bit x86 Windows/Linux).
+    - "thiscall": Used for invoking C++ non-static member functions on 32-bit Windows.
+    - "vectorcall": Passes vector registers for graphics and SIMD math (32-bit and 64-bit Windows).
+    - "aapcs" / "aapcs-vfp": Standard calling conventions for ARM architecture devices.
+    - "sysv64": The standard ABI for 64-bit non-Windows operating systems (Linux, macOS, BSD).
+    - "win64": The standard ABI for 64-bit Windows applications.
+
+- Unstable and Internal ABIs
+    These require explicit feature flags and a nightly Rust compiler, as they are meant for core language development or specific compiler optimizations.
+    
+    - "rust-call": Used internally to implement the Fn, FnMut, and FnOnce closure traits by flattening tuple arguments.
+    
+    - "rust-intrinsic": Used by the compiler to expose direct CPU instructions or low-level compiler intrinsics (like transmute or bitreverse).
+    
+    - "ptx-kernel": Used to write GPU kernels for NVIDIA CUDA devices.
+    
+    - "efiapi": Used for building Extensible Firmware Interface (UEFI) applications and drivers."wasm": Used for specific execution environments in WebAssembly.
