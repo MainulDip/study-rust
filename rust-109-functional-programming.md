@@ -287,7 +287,7 @@ pub trait Iterator {
 // this associated type says implementing the Iterator trait requires that Item type must be defined
 ```
 
-* When we loop over some collection using `for in`, behind the scene the collection is converted into an iterator using the `IntoIterator` trait, and use `next()` while looping.
+* When we loop over some collection using `for in`, behind the scene the collection is converted into an iterator using the `IntoIterator` trait, and use `next()` while looping
 
 * Looping tips using `for in` to be more precise with ownership
     - `for item in collection` — Loops by consuming the collection (takes ownership, so you cannot use the collection afterward).

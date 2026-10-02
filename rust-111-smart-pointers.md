@@ -88,7 +88,16 @@ pub fn custom_struct_deref_trait_implementation() {
     let x = 7;
     let y = MyBox::new(x);
     assert_eq!(7, *y);
-    println!("*y = {}", *y); // *y = 7
+    println!("*y = {}", *y); // *y = 7 // rust knows what to return when * is prefiex
+    // println!("y = {}", y); // error, as rust doesn't know how to print y, will spit out error: ``MyBox<{integer}>` doesn't implement `std::fmt::Display``
+    println!("x = {}", x); // x = 7 // still works as the x was stack allocated
+
+    // lets try with string
+    let x_string= String::from("hello");
+    let y_string = MyBox::new(&x_string);
+    assert_eq!("hello", *y_string); // without the the deref trait implementation, *y_string will not work
+    println!("*y_string = {}", *y_string); // *y_string = hello
+    println!("x_string = {}", x_string); // x_string = hello // still works as the string was borrowed, not moved
 }
 
 // Here, MyBox is a tuple struct, tuple struct cannot have named fields (keys), supports only value/s, no key/s.
@@ -105,6 +114,8 @@ impl <T> MyBox<T> {
 impl<T> Deref for MyBox<T> {
     type Target = T;
 
+    // notice, we're returning a reference here, as rust compiler will call the `*(y.deref())` behind the scene when we call `*y`
+    // also returning a reference is required here, as it will not move the ownership
     fn deref(&self) -> &Self::Target {
         &self.0 // because, MyBox is a tuple struct, self.0 can be used to access the first value
         // note: rust compiler can evaluate the tuple struct's member, using self.1 will not be possible in this case. Compiler will flag error immediately.
@@ -112,4 +123,18 @@ impl<T> Deref for MyBox<T> {
 }
 ```
 
+* Without the Deref trait, the compiler can only dereference & references. The deref method gives the compiler the ability to take a value of any type that implements Deref and call the deref method to get a reference that it knows how to dereference.
 
+```rust
+// behind the scene, while calling the *y, rust will run
+*(y.deref())
+```
+
+* Note that the * operator is replaced with a call to the deref method and then a call to the * operator just once, each time we use a * in our code.
+
+### Deref coercion (automatically implies on arguments to functions and methods):
+In Rust, coercion is an implicit, automatic type conversion.
+
+With the deref coercion (supplied by std library), the compiler automatically converts a reference to one type into a reference to another type if the source type implements the Deref trait.
+
+For example, deref coercion can convert &String to &str, because String implements the Deref trait such that it returns &str.
