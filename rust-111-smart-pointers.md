@@ -144,6 +144,13 @@ Because of coercion, we can inject a String into our tuple struct `MyBox<T> (T)`
 ```rust
 fn main() {
     let m = MyBox::new(String::from("Rust"));
-    
+    hello(&m); // because MyBox implements Deref trait, we can do this easily
+    // without deref coercion, we would have to do this
+    // hello(&(*m)[..]);
+    // where, The (*m) dereferences the MyBox<String> into a String. Then, the & and [..] take a string slice of the String that is equal to the whole string to match the signature of hello
+}
+
+fn hello(name: &str) {
+    println!("Hello, {name}!");
 }
 ```
