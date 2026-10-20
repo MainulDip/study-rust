@@ -296,7 +296,7 @@ pub trait Iterator {
 
 
 ### Methods consuming Iterators:
-Methods that call `next` are called consuming adapter, as calling them uses up the iterator. Like the `sum` method, which takes ownership of the iterator and iterates through the items by repeatedly calling next, thus consuming the iterator. As it iterates through, it adds each item to a running total and returns the total when iteration is complete.
+Methods that call `next` are called consuming adapter, as calling them uses up the iterator. Like the `sum` method, which takes ownership of the iterator and iterates through the items by repeatedly calling next, thus consuming the iterator. As it iterates through, it adds each item to a running total and returns the total when iteration completes.......
 
 
 

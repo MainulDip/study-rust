@@ -38,7 +38,7 @@ pub fn add_one(x: i32) -> i32 {
 }
 ```
 
-* Note: Any code example written inside of a doc comment block will be tested as well by running `cargo test` or `cargo test --doc` (how cool is that).
+* Note: Any code example written inside of a doc comment block will be tested as well by running `cargo test` or `cargo test --doc` (how cool is that).......
 
 ```rust
 /// ```

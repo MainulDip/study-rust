@@ -123,14 +123,14 @@ impl<T> Deref for MyBox<T> {
 }
 ```
 
-* Without the Deref trait, the compiler can only dereference & references. The deref method gives the compiler the ability to take a value of any type that implements Deref and call the deref method to get a reference that it knows how to dereference.
+* Without the Deref trait, the compiler can only dereference `&` references. The deref method gives the compiler the ability to take a value of any type that implements Deref and call the deref method to get a reference that it knows how to dereference.
 
 ```rust
-// behind the scene, while calling the *y, rust will run
+// behind the scene, while calling the *y, rust will run the below code automatically
 *(y.deref())
+// Note that the * operator is replaced with a call to the deref method and then a call to the * operator. 
+// Rust compiler will do this automatically as it knows deref method returns a reference `&`, hence the `*()`, which ends up calling `*(y.deref())`
 ```
-
-* Note that the * operator is replaced with a call to the deref method and then a call to the * operator just once, each time we use a * in our code.
 
 ### Deref coercion (automatically implies on arguments to functions and methods):
 In Rust, coercion is an implicit, automatic type conversion.
@@ -138,3 +138,12 @@ In Rust, coercion is an implicit, automatic type conversion.
 With the deref coercion (supplied by std library), the compiler automatically converts a reference to one type into a reference to another type if the source type implements the Deref trait.
 
 For example, deref coercion can convert &String to &str, because String implements the Deref trait such that it returns &str.
+
+Because of coercion, we can inject a String into our tuple struct `MyBox<T> (T)` and return a slice `&str` using the `*` dereference.
+
+```rust
+fn main() {
+    let m = MyBox::new(String::from("Rust"));
+    
+}
+```

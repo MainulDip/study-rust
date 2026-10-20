@@ -20,7 +20,8 @@ pub fn custom_struct_deref_trait_implementation() {
     
 }
 
-// Here, MyBox is a tuple struct, tuple struct cannot have named fields (keys), supports only value/s, no key/s.
+// Here, MyBox is a generic tuple struct, tuple struct cannot have named fields (keys), supports only value/s, no key/s.
+// non generic tuple struct: struct `MyBox(u32);`
 struct MyBox<T>(T);
 
 impl <T> MyBox<T> {
