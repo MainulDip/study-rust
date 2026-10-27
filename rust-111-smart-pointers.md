@@ -146,7 +146,7 @@ fn main() {
     let m = MyBox::new(String::from("Rust"));
     hello(&m); // because MyBox implements Deref trait, we can do this easily
     // without deref coercion, we would have to do this
-    // hello(&(*m)[..]);
+    hello(&(*m)[..]);
     // where, The (*m) dereferences the MyBox<String> into a String. Then, the & and [..] take a string slice of the String that is equal to the whole string to match the signature of hello
 }
 
@@ -154,3 +154,83 @@ fn hello(name: &str) {
     println!("Hello, {name}!");
 }
 ```
+
+* When the Deref trait is defined for the types involved, Rust will analyze the types and use Deref::deref as many times as necessary to get a reference to match the parameter’s type, all during compile time
+
+
+### Deref coercion with mutable references:
+Similar to Deref for immutable references, the `DerefMut` trait si used to override the * operator on mutable references.
+
+Rust does deref coercion when it finds types and trait implementations in three cases:
+
+1. From &T to &U when T: Deref<Target=U>
+2. From &mut T to &mut U when T: DerefMut<Target=U>
+3. From &mut T to &U when T: Deref<Target=U>
+
+The first two cases are the same except that the second implements mutability. 
+
+- The first case states that if you have a &T, and T implements Deref to some type U, you can get a &U transparently. 
+
+- The second case states that the same deref coercion happens for mutable references.
+
+- The third case states that if you have a &mut T, and T implements Deref to some type U, you can get a &U transparently.
+
+
+Note: Rust will never coerce a mutable reference from an immutable reference. As this will brake the borrowing rules, `if you have a mutable reference, that mutable reference must be the only reference to that data (otherwise, the program wouldn’t compile).`
+
+
+### Running Code on Cleanup with the `Drop` Trait:
+The `Drop` trait is always used when implementing a smart pointer with custom type. It defines what happens when a value is went out of scope and dropped by compiler. Rust will call the drop function automatically. To manually drop an object, use `std::mem::drop` function with the object in the argument.
+
+The `Drop` trait requires the `drop` method to be implemented.
+
+```rust
+fn main_drop() {
+    println!("Calling drop function");
+    let c1 = CustomSmartPointer {
+        data: String::from("First Stuff")
+    };
+
+    let c2 = CustomSmartPointer {
+        data: String::from("Second Stuff")
+    };
+
+    println!("CustomSmartPointers are created!");
+} // after this ending braces, all CustomSmartPointers will be dropped and the implemented `drop` function will be called
+// note: the dropping will start from bottom to top, so the c2 will be dropped first, following the c1 will be dropped
+
+struct CustomSmartPointer {
+    data: String,
+}
+
+impl Drop for CustomSmartPointer {
+    fn drop(&mut self) {
+        println!("Dropping CustomSmartPointer with data {}", self.data);
+    }
+}
+```
+
+Note: Rust doesn’t let us call drop explicitly, because Rust would still automatically call drop on the value at the end of main. This would cause a double free error because Rust would be trying to clean up the same value twice.
+
+* Manually dropping an `Instance` using the `(std::mem:drop)` as `drop` function. Used to cleanup values early, ie, managing locks by force deallocating a instance/value before the scope ends, so other code on the same scope can acquire the lock. 
+
+```rust
+fn main() {
+    let c = CustomSmartPointer {
+        data: String::from("some data"),
+    };
+    println!("CustomSmartPointer created");
+    c.drop();
+    println!("CustomSmartPointer dropped before the end of main");
+}
+```
+
+
+* The `Drop` trait and the `drop` function (`std::mem:drop`) are included in the prelude, so we don't need to bring that into scope.
+
+### Rc<T> Reference Counting Smart Pointer (Single Threaded):
+To enable multiple owners of a single value, the `Rc<T>` smart pointer is used. 
+
+Like in a graph data structure, multiple edges might point to the same node, and that node conceptually owned by all of the edges that point to it. A node node shouldn't be cleaned up unless it doesn't have any edges pointing to it and so has no owners.
+
+The Rc<T> type keeps track of the number of references to a value to determine whether or not the value is still in use. If there are zero references to a value, the value can be cleaned up without any references becoming invalid.
