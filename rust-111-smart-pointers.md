@@ -234,3 +234,27 @@ To enable multiple owners of a single value, the `Rc<T>` smart pointer is used.
 Like in a graph data structure, multiple edges might point to the same node, and that node conceptually owned by all of the edges that point to it. A node node shouldn't be cleaned up unless it doesn't have any edges pointing to it and so has no owners.
 
 The Rc<T> type keeps track of the number of references to a value to determine whether or not the value is still in use. If there are zero references to a value, the value can be cleaned up without any references becoming invalid.
+
+
+### `as_ref()` and it's alternatives:
+The .as_ref() method comes from the AsRef trait. It is an explicit, manual conversion designed to let a type cheaply represent itself as a reference to a different type.
+
+It is highly useful in generic programming where you want to accept anything that can look like a `&str`, `&[u8]`, or `&Path`.
+
+```rust
+fn print_generic<T: AsRef<str>>(s: T) {
+    println!("{}", s.as_ref());
+}
+
+let variable: String = String::from("hello");
+print_generic(variable); // Works because String implements AsRef<str>
+```
+
+* The problem: 
+
+
+* Alternatives: manual deconstruction by `match`
+
+* Alternatives: Conditional Assignment by `if let`
+
+* Alternatives: Borrowing the whole option first then mapping using `map(<closure>)`

@@ -31,7 +31,7 @@ impl <T> MyBox<T> {
     }
 }
 
-// implementing the deref trait so that MyBox can use `*` to dereference the value
+// implementing the `deref` trait so that MyBox can use `*` to dereference the value
 impl<T> Deref for MyBox<T> {
     type Target = T;
 

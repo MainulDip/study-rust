@@ -8,6 +8,7 @@ use custom_struct_deref_impl::custom_struct_deref_trait_implementation;
 use drop_trait_init::init_drop_trait;
 use reference_counting_init::reference_counting_init;
 
+// calling all other functions
 fn main() {
     box_smart_pointer_init();
     custom_struct_deref_trait_implementation();
