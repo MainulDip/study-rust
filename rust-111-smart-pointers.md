@@ -235,6 +235,105 @@ Like in a graph data structure, multiple edges might point to the same node, and
 
 The Rc<T> type keeps track of the number of references to a value to determine whether or not the value is still in use. If there are zero references to a value, the value can be cleaned up without any references becoming invalid.
 
+```rust
+use std::rc::Rc; // we need to bring Rc<T> into scope, as it's not in the prelude
+
+// inside Cons, we're defining a recursive type
+// #[derive(Debug)] // if we want to print the emum on the fly
+enum List {
+    // Cons(i32, Box<List>), // Box will not work if we want to reference a variable multiple time without deep cloning. Also Rc::clone is not a deep clone, used when contracting this enum
+    Cons(i32, Rc<List>),
+    Nil,
+}
+
+use crate::reference_counting_init::List::{Cons, Nil}; // creating shortcut for easy access
+
+fn main_reference_counting() {
+    
+    // we cannot move value (`a` here) twice, in the code below, we moved `a` twice (first in `b` and then in `c`), which is not allowed 
+    // let a = Cons(5, Box::new(Cons(10, Box::new(Nil))));
+    // let b = Cons(3, Box::new(a));
+    // let c = Cons(4, Box::new(a)); // compile error: a cannot be moved again (we already moved once on the `b` definition)
+
+    // use Rc<T> instead to use any variable multiple times
+    let a = Rc::new(Cons(5, Rc::new(Cons(10, Rc::new(Nil)))));
+    let b = Cons(3, Rc::clone(&a));
+    let c = Cons(4, Rc::clone(&a)); // because we used Rc (reference counting), we can use the `a` as many time as we want, while also tracking the ownership
+    // when nothing will be pointing to the `a`, it will be removed
+    // Rc::clone is not a deep clone, so no performance loss like using a.clone only
+    // The call to Rc::clone only increments the reference count, which doesn’t take much time
+}
+```
+
+
+* Inner workings of Rc<T>, by printing stored reference number using `Rc::strong_count(&Rc<T>);
+
+```rust
+// --snip--
+
+fn main() {
+    let a = Rc::new(Cons(5, Rc::new(Cons(10, Rc::new(Nil)))));
+    println!("count after creating a = {}", Rc::strong_count(&a));
+    let b = Cons(3, Rc::clone(&a));
+    println!("count after creating b = {}", Rc::strong_count(&a));
+    {
+        let c = Cons(4, Rc::clone(&a));
+        println!("count after creating c = {}", Rc::strong_count(&a));
+    }
+    println!("count after c goes out of scope = {}", Rc::strong_count(&a));
+}
+
+// count after creating a = 1
+// count after creating b = 2
+// count after creating c = 3
+// count after c goes out of scope = 2
+
+// because, we have created inner scope in the main function, when the scope ends, the variable dropped and Rc::strong_count get reduced
+// after the main function ends, everything will be cleared up
+```
+
+
+* printing Rc<T>
+
+
+```rust
+// implement printing with loop function
+fn print_with_loop(list: &List) {
+    let mut current = list;
+    while let Cons(val, next) = current {
+        println!("Value = {val}");
+        current = next;
+    }
+}
+
+// implementing printing with recursive function
+fn print_with_recursion(list: &List) {
+    match list {
+        Cons(val, next) => {
+            println!("Value = {val}");
+            // print_with_recursion(&next); // works, but `&` before `next` is redundant, as it's already been borrowed
+            print_with_recursion(next); // this will also work, as next is already borrowed
+            print_with_recursion(next.as_ref()); // this will also work (though redundant), as Rc<T> already implements AsRef trait
+        },
+        Nil => (),
+    }
+}
+
+// experiment: manual deconstruction
+fn manual_decons() {
+    let v = Some(String::from("Hello"));
+    let inner_borrow = match v {
+        // note: using `ref` keyword here to bind a variable by reference rather than moving the value
+        Some(ref s) => {
+            println!("{s}");
+            Some(s)
+        },
+        None => None,
+    };
+}
+```
+
+* Using Rc<T>, we can only borrow immutably. To mutate use interior mutability pattern with `RefCell<T>` mixing with Rc<T>
 
 ### `as_ref()` and it's alternatives:
 The .as_ref() method comes from the AsRef trait. It is an explicit, manual conversion designed to let a type cheaply represent itself as a reference to a different type.
@@ -250,11 +349,60 @@ let variable: String = String::from("hello");
 print_generic(variable); // Works because String implements AsRef<str>
 ```
 
-* The problem: 
+* The problem: Sometimes borrowing an `Option<T>` with `&` into a variable, borrows the whole option as `&Option<T>`. To achieve `Option<&T>`, `.as_ref()` comes handy
 
+```rust
+let v: Option<String> = Some(String::from("hello"));
+
+// using standard borrowing with `&`
+let outer_borrow: &Option<String> = &v;
+
+// using `.as_ref()` to borrow internally
+let inner_borrow: Option<&String> = v.as_ref();
+// though `Option` doesn't implement `AsRef` trait, `as_ref()` is chainable because
+// `Option` has its own method definition for `as_ref`, which returns `Option<&T>
+```
 
 * Alternatives: manual deconstruction by `match`
 
+```rust
+fn manual_decons() {
+    let v = Some(String::from("Hello"));
+    let inner_borrow = match v {
+        // note: using `ref` keyword here to bind a variable by reference rather than moving the value
+        Some(ref s) => {
+            println!("{s}");
+            Some(s)
+        },
+        None => None,
+    };
+}
+```
+
 * Alternatives: Conditional Assignment by `if let`
 
+```rust
+fn conditional_assignment() {
+    let v = Some(String::from("hello"));
+    // note: using the same `ref` keyword for reference binding
+    let inner_borrow = if let Some(ref s) = v {
+        Some(s)  
+    } else { // note: for statement or assignment, `else` block is mandator for `if let` statement
+        None
+    };
+}
+```
+
 * Alternatives: Borrowing the whole option first then mapping using `map(<closure>)`
+
+```rust
+let v: Option<String> = Some(String::from("hello"));
+// `&v` returns &Option<String>, and .map handles the conversion.
+let inner_borrow: Option<&String> = (&v).map(|s| s);
+// Note: if you want `Option<&str>`, use `.as_deref()`
+```
+
+
+### Interior Mutability Pattern (`unsafe`) and `RefCell<T>`:
+Its a design pattern that allow to mutate the data even when there are immutable reference to that data, which on normal is disallowed by the borrow checker. It use `unsafe` inside a data structure to bend Rust usual rules (borrow checker).
+

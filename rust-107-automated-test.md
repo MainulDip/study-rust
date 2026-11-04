@@ -46,7 +46,7 @@ There are different kinds of test features
 - Controlling test to run differently
 
 
-### Macros for test suites:
+### Macros for test suites :
 `assert!` macro from std lib, can evaluates to true (Test Ok) and false (Test Failed). When failed, the `assert!` macro calls `panic!` behind the scene
 
 ```rust

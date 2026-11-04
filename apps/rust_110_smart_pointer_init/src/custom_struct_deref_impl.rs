@@ -1,4 +1,4 @@
-use std::ops::Deref; // importing the deref trait
+use std::{ops::Deref, println}; // importing the deref trait
 
 pub fn custom_struct_deref_trait_implementation() {
     println!("\n\n----------Custom Struct With Deref Trait Implementation----------------\n\n");

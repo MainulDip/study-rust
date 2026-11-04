@@ -1,4 +1,4 @@
-use std::{print, println, rc::Rc};
+use std::rc::Rc;
 
 pub fn reference_counting_init() {
     println!("\n\n------Introduction to reference counting using Rc<T>-------\n\n");
@@ -8,7 +8,7 @@ pub fn reference_counting_init() {
 fn main_reference_counting() {
     println!("Reference counting main function call");
 
-    // we cannot move value (`a` here) twice, the code below
+    // we cannot move value (`a` here) twice, in the code below, we moved `a` twice (first in `b` and then in `c`), which is not allowed 
     // let a = Cons(5, Box::new(Cons(10, Box::new(Nil))));
     // let b = Cons(3, Box::new(a));
     // let c = Cons(4, Box::new(a)); // a cannot be moved again here
@@ -35,6 +35,11 @@ fn main_reference_counting() {
     // printing with recursion
     println!("\n\nPrinting with recursion -------------------\n");
     print_with_recursion(&c);
+
+
+    // experimenting
+    println!("\n\nManual Deconstruction Calling \n");
+    manual_decons();
 
 }
 
@@ -68,4 +73,27 @@ fn print_with_recursion(list: &List) {
         },
         Nil => (),
     }
+}
+
+// experiment: manual deconstruction
+fn manual_decons() {
+    let v = Some(String::from("Hello"));
+    let inner_borrow = match v {
+        // note: using `ref` keyword here to bind a variable by reference rather than moving the value
+        Some(ref s) => {
+            println!("{s}");
+            Some(s)
+        },
+        None => None,
+    };
+}
+
+// experiment: Conditional Assignment using `if let`
+fn conditional_assignment() {
+    let v = Some(String::from("hello"));
+    let inner_borrow = if let Some(ref s) = v {
+        Some(s)  
+    } else { // note: for statement or assignment, `else` block is mandator for `if let` statement
+        None
+    };
 }
